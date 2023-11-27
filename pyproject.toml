@@ -18,54 +18,11 @@ dependencies = [
 Homepage = "https://pixee.ai"
 
 [project.scripts]
-pixee = "pixee.pixee:main"
+pixee = "pixee.cli:main"
 
 [project.optional-dependencies]
-test = [
-    "coverage==7.3.*",
-    "Flask<4",
-    "GitPython<4",
-    "Jinja2~=3.1.2",
-    "lxml~=4.9.3",
-    "mock==5.1.*",
-    "pre-commit<4",
-    "Pyjwt~=2.8.0",
-    "pytest==7.4.*",
-    "pytest-cov~=4.1.0",
-    "pytest-mock~=3.12.0",
-    "pytest-xdist==3.*",
-    "security~=1.2.0",
-    "types-mock==5.1.*",
-]
-complexity = [
-    "radon==6.0.*",
-    "xenon==0.9.*",
-]
-all = [
-    "codemodder[test]",
-    "codemodder[complexity]",
-]
-
-[project.entry-points.codemods]
-core = "core_codemods:registry"
 
 [tool.setuptools]
 
-[tool.setuptools.package-data]
-"core_codemods.semgrep" = ["src/core_codemods/semgrep/*.yaml"]
-"core_codemods.docs" = ["src/core_codemods/docs/*.md"]
-
 [tool.setuptools_scm]
-version_file = "src/codemodder/_version.py"
-
-[tool.pytest.ini_options]
-# Ignore integration tests and ci tests by default
-testpaths = ["tests"]
-
-[tool.black]
-extend-exclude = '''
-/(
-  tests/samples |
-  src/codemodder/_version.py
-)/
-'''
+version_file = "src/pixee/_version.py"
