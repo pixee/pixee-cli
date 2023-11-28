@@ -24,6 +24,7 @@ pixee = "pixee.cli:main"
 dev = [
     "black",
     "pre-commit",
+    "pylint",
     "pytest",
     "pytest-cov",
     "pytest-mock",

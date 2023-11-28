@@ -1,0 +1,42 @@
+name: Lint
+
+on:
+  push:
+    branches:
+      - main
+      - develop
+  pull_request:
+    branches:
+      - main
+      - develop
+  merge_group:
+
+concurrency:
+  group: (${{ github.workflow }}-${{ github.event.inputs.branch || github.event.pull_request.head.ref }})
+  cancel-in-progress: true
+
+jobs:
+  linting:
+    name: Pylint Checks
+    runs-on: ubuntu-20.04
+    timeout-minutes: 5
+    steps:
+      - name: Set Up Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: '3.11'
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Install Package
+        run: pip install .
+      - name: Install Dependencies
+        run: pip install ".[dev]"
+      - name: Run pylint
+        run: make lint
+
+  pre-commit:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+    - uses: actions/setup-python@v4
+    - uses: pre-commit/action@v3.0.0
