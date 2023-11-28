@@ -9,7 +9,7 @@ name = "pixee"
 requires-python = ">=3.10.0"
 readme = "README.md"
 license = {file = "LICENSE"}
-description = "A pluggable framework for building codemods in Python"
+description = "Pixee CLI"
 dependencies = [
     "codemodder"
 ]
@@ -21,6 +21,13 @@ Homepage = "https://pixee.ai"
 pixee = "pixee.cli:main"
 
 [project.optional-dependencies]
+dev = [
+    "black",
+    "pre-commit",
+    "pytest",
+    "pytest-cov",
+    "pytest-mock",
+]
 
 [tool.setuptools]
 

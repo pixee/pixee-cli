@@ -9,3 +9,9 @@ To install from source:
 
 For an editable installation during development:
 `pip install -e .`
+
+
+## Development
+
+To install tools for development:
+`pip install -e ".[dev]"`
