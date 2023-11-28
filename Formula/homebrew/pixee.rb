@@ -4,6 +4,8 @@ class Pixee < Formula
   desc "Fix and prevent bugs and security vulnerabilities in your code"
   homepage "https://pixee.ai"
   url "https://github.com/pixee/pixee-cli.git"
+  head "https://github.com/pixee/pixee-cli.git", branch: "main"
+  license "MIT"
   version "0.1.0"
 
   depends_on "python@3.11"
