@@ -8,6 +8,9 @@ from rich.console import Console
 
 from .logo import logo2 as logo
 
+# Enable overrides for local testing purposes
+PYTHON_CODEMODDER = os.environ.get("PIXEE_PYTHON_CODEMODDER", "pixee-python-codemodder")
+
 
 def run_fix(console: Console, args: Namespace):
     console.print("Welcome to Pixee!", style="bold")
@@ -22,7 +25,7 @@ def run_fix(console: Console, args: Namespace):
         )
 
     output_path = "results.codetf.json"
-    subprocess.run(["codemodder", args.path, "--output", output_path], check=True)
+    subprocess.run([PYTHON_CODEMODDER, args.path, "--output", output_path], check=True)
 
 
 def main():
