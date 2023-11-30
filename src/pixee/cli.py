@@ -38,5 +38,15 @@ def fix(path):
     subprocess.run([PYTHON_CODEMODDER, path, "--output", output_path], check=True)
 
 
+@main.command()
+def codemods():
+    """List available codemods"""
+    console.print("Available codemods:", style="bold")
+    result = subprocess.run(
+        [PYTHON_CODEMODDER, "--list"], stdout=subprocess.PIPE, check=True
+    )
+    console.print(result.stdout.decode("utf-8").splitlines())
+
+
 if __name__ == "__main__":
     main()
