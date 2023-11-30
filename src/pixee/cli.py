@@ -23,9 +23,23 @@ def main():
     console.print(logo, style="bold cyan")
 
 
+def run_codemodder(codemodder, path, dry_run):
+    common_codemodder_args = ["--dry-run"] if dry_run else []
+
+    codetf = tempfile.NamedTemporaryFile()
+    subprocess.run(
+        [codemodder, "--output", codetf.name, path] + common_codemodder_args,
+        stderr=subprocess.DEVNULL,
+        check=True,
+    )
+
+    return codetf
+
+
 @main.command()
 @click.argument("path", nargs=1, required=False, type=click.Path(exists=True))
-def fix(path):
+@click.option("--dry-run", is_flag=True, help="Don't write changes to disk")
+def fix(path, dry_run):
     """Find and fix vulnerabilities in your project"""
     console.print("Welcome to Pixee!", style="bold")
     console.print("Let's find and fix vulnerabilities in your project.", style="bold")
@@ -38,20 +52,16 @@ def fix(path):
             default=os.getcwd(),
         )
 
-    python_codetf = tempfile.NamedTemporaryFile()
+    console.print("Dry run:", dry_run, style="bold")
+
     # TODO: better file glob patterns
     if python_files := glob(str(Path(path) / "**" / "*.py"), recursive=True):
         console.print("Running Python codemods...", style="bold")
-        subprocess.run(
-            [PYTHON_CODEMODDER, "--output", python_codetf.name, path], check=True
-        )
+        python_codetf = run_codemodder(PYTHON_CODEMODDER, path, dry_run)
 
-    java_codetf = tempfile.NamedTemporaryFile()
     if java_files := glob(str(Path(path) / "**" / "*.java"), recursive=True):
         console.print("Running Java codemods...", style="bold")
-        subprocess.run(
-            [JAVA_CODEMODDER, "--output", java_codetf.name, path], check=True
-        )
+        java_codetf = run_codemodder(JAVA_CODEMODDER, path, dry_run)
 
 
 @main.command()
