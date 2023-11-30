@@ -1,7 +1,10 @@
+import datetime
 from glob import glob
+import json
 import os
 from pathlib import Path
 import subprocess
+import sys
 import tempfile
 
 import click
@@ -9,11 +12,23 @@ from prompt_toolkit import prompt
 from prompt_toolkit.completion.filesystem import PathCompleter
 from rich.console import Console
 
+from ._version import __version__
 from .logo import logo2 as logo
 
 # Enable overrides for local testing purposes
 PYTHON_CODEMODDER = os.environ.get("PIXEE_PYTHON_CODEMODDER", "pixee-python-codemodder")
 JAVA_CODEMODDER = os.environ.get("PIXEE_JAVA_CODEMODDER", "pixee-java-codemodder")
+
+CODEMODDER_MAPPING = {
+    "python": (
+        os.environ.get("PIXEE_PYTHON_CODEMODDER", "pixee-python-codemodder"),
+        "*.py",
+    ),
+    "java": (
+        os.environ.get("PIXEE_JAVA_CODEMODDER", "pixee-java-codemodder"),
+        "*.java",
+    ),
+}
 
 console = Console()
 
@@ -39,7 +54,8 @@ def run_codemodder(codemodder, path, dry_run):
 @main.command()
 @click.argument("path", nargs=1, required=False, type=click.Path(exists=True))
 @click.option("--dry-run", is_flag=True, help="Don't write changes to disk")
-def fix(path, dry_run):
+@click.option("--language", type=click.Choice(["python", "java"]))
+def fix(path, dry_run, language):
     """Find and fix vulnerabilities in your project"""
     console.print("Welcome to Pixee!", style="bold")
     console.print("Let's find and fix vulnerabilities in your project.", style="bold")
@@ -54,14 +70,30 @@ def fix(path, dry_run):
 
     console.print("Dry run:", dry_run, style="bold")
 
-    # TODO: better file glob patterns
-    if python_files := glob(str(Path(path) / "**" / "*.py"), recursive=True):
-        console.print("Running Python codemods...", style="bold")
-        python_codetf = run_codemodder(PYTHON_CODEMODDER, path, dry_run)
+    combined_codetf = {
+        "vendor": "pixee",
+        "tool": "pixee-cli",
+        "version": __version__,
+        "commandLine": " ".join(sys.argv),
+        "results": [],
+    }
 
-    if java_files := glob(str(Path(path) / "**" / "*.java"), recursive=True):
-        console.print("Running Java codemods...", style="bold")
-        java_codetf = run_codemodder(JAVA_CODEMODDER, path, dry_run)
+    start = datetime.datetime.now()
+
+    for lang, (codemodder, file_glob) in CODEMODDER_MAPPING.items():
+        if language and lang != language:
+            continue
+
+        if glob(str(Path(path) / "**" / file_glob), recursive=True):
+            console.print(f"Running {lang} codemods...", style="bold")
+            lang_codetf = run_codemodder(codemodder, path, dry_run)
+            results = json.load(lang_codetf)
+            combined_codetf["results"].extend(results["results"])
+
+    elapsed = datetime.datetime.now() - start
+
+    combined_codetf["elapsed"] = int(elapsed.total_seconds() * 1000)
+    Path("results.codetf.json").write_text(json.dumps(combined_codetf, indent=2))
 
 
 @main.command()
