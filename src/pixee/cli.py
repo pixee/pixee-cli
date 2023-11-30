@@ -68,10 +68,18 @@ def fix(path, dry_run):
 def codemods():
     """List available codemods"""
     console.print("Available codemods:", style="bold")
-    result = subprocess.run(
-        [PYTHON_CODEMODDER, "--list"], stdout=subprocess.PIPE, check=True
-    )
-    console.print(result.stdout.decode("utf-8").splitlines())
+
+    codemods = []
+    for codemodder in [PYTHON_CODEMODDER, JAVA_CODEMODDER]:
+        result = subprocess.run(
+            [codemodder, "--list"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            check=True,
+        )
+        codemods.extend(result.stdout.decode("utf-8").splitlines())
+    # TODO: filter out non-pixee codemods?
+    console.print(sorted(codemods))
 
 
 if __name__ == "__main__":
