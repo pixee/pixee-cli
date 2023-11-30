@@ -1,5 +1,8 @@
+from glob import glob
 import os
+from pathlib import Path
 import subprocess
+import tempfile
 
 import click
 from prompt_toolkit import prompt
@@ -10,6 +13,7 @@ from .logo import logo2 as logo
 
 # Enable overrides for local testing purposes
 PYTHON_CODEMODDER = os.environ.get("PIXEE_PYTHON_CODEMODDER", "pixee-python-codemodder")
+JAVA_CODEMODDER = os.environ.get("PIXEE_JAVA_CODEMODDER", "pixee-java-codemodder")
 
 console = Console()
 
@@ -34,8 +38,20 @@ def fix(path):
             default=os.getcwd(),
         )
 
-    output_path = "results.codetf.json"
-    subprocess.run([PYTHON_CODEMODDER, path, "--output", output_path], check=True)
+    python_codetf = tempfile.NamedTemporaryFile()
+    # TODO: better file glob patterns
+    if python_files := glob(str(Path(path) / "**" / "*.py"), recursive=True):
+        console.print("Running Python codemods...", style="bold")
+        subprocess.run(
+            [PYTHON_CODEMODDER, "--output", python_codetf.name, path], check=True
+        )
+
+    java_codetf = tempfile.NamedTemporaryFile()
+    if java_files := glob(str(Path(path) / "**" / "*.java"), recursive=True):
+        console.print("Running Java codemods...", style="bold")
+        subprocess.run(
+            [JAVA_CODEMODDER, "--output", java_codetf.name, path], check=True
+        )
 
 
 @main.command()
