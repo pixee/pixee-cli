@@ -11,6 +11,7 @@ import click
 from prompt_toolkit import prompt
 from prompt_toolkit.completion.filesystem import PathCompleter
 from rich.console import Console
+from rich.markdown import Markdown
 
 from ._version import __version__
 from .logo import logo2 as logo
@@ -56,7 +57,10 @@ def run_codemodder(codemodder, path, dry_run):
 @click.option("--dry-run", is_flag=True, help="Don't write changes to disk")
 @click.option("--language", type=click.Choice(["python", "java"]))
 @click.option("--output", type=click.Path(), help="Output CodeTF file path")
-def fix(path, dry_run, language, output):
+@click.option(
+    "--explain", is_flag=True, help="Interactively explain codemodder results"
+)
+def fix(path, dry_run, language, output, explain):
     """Find and fix vulnerabilities in your project"""
     console.print("Welcome to Pixee!", style="bold")
     console.print("Let's find and fix vulnerabilities in your project.", style="bold")
@@ -94,6 +98,19 @@ def fix(path, dry_run, language, output):
 
     elapsed = datetime.datetime.now() - start
     combined_codetf["elapsed"] = int(elapsed.total_seconds() * 1000)
+
+    if explain:
+        for result in combined_codetf["results"]:
+            name = result["codemod"]
+            summary = result["summary"]
+            description = result["description"]
+            console.print(f"{summary} ({name})", style="bold")
+            console.print(Markdown(description))
+            prompt("Press Enter to see the updated files")
+            for entry in result["changeset"]:
+                console.print(f"File: {entry['path']}", style="bold")
+                console.print(Markdown(f"```diff\n{entry['diff']}```"))
+            prompt("Press Enter to continue...")
 
     result_file = Path(output or "results.codetf.json")
 
