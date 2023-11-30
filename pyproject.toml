@@ -12,6 +12,7 @@ license = {file = "LICENSE"}
 description = "Pixee CLI"
 dependencies = [
     "codemodder",
+    "click",
     "prompt-toolkit"
 ]
 
