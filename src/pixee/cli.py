@@ -55,7 +55,8 @@ def run_codemodder(codemodder, path, dry_run):
 @click.argument("path", nargs=1, required=False, type=click.Path(exists=True))
 @click.option("--dry-run", is_flag=True, help="Don't write changes to disk")
 @click.option("--language", type=click.Choice(["python", "java"]))
-def fix(path, dry_run, language):
+@click.option("--output", type=click.Path(), help="Output CodeTF file path")
+def fix(path, dry_run, language, output):
     """Find and fix vulnerabilities in your project"""
     console.print("Welcome to Pixee!", style="bold")
     console.print("Let's find and fix vulnerabilities in your project.", style="bold")
@@ -75,6 +76,7 @@ def fix(path, dry_run, language):
         "tool": "pixee-cli",
         "version": __version__,
         "commandLine": " ".join(sys.argv),
+        "elapsed": 0,
         "results": [],
     }
 
@@ -91,9 +93,12 @@ def fix(path, dry_run, language):
             combined_codetf["results"].extend(results["results"])
 
     elapsed = datetime.datetime.now() - start
-
     combined_codetf["elapsed"] = int(elapsed.total_seconds() * 1000)
-    Path("results.codetf.json").write_text(json.dumps(combined_codetf, indent=2))
+
+    result_file = Path(output or "results.codetf.json")
+
+    Path(result_file).write_text(json.dumps(combined_codetf, indent=2))
+    console.print(f"Results written to {result_file}", style="bold")
 
 
 @main.command()
