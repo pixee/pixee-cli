@@ -35,6 +35,7 @@ console = Console()
 
 
 @click.group()
+@click.version_option(__version__)
 def main():
     console.print(logo, style="bold cyan")
 
@@ -116,6 +117,26 @@ def fix(path, dry_run, language, output, explain):
 
     Path(result_file).write_text(json.dumps(combined_codetf, indent=2))
     console.print(f"Results written to {result_file}", style="bold")
+
+
+@main.command()
+def info():
+    """About Pixee"""
+    console.print("Pixee finds and fixes vulnerabilities in your code.", style="bold")
+    console.print("Learn more at https://pixee.ai")
+    console.print("Install the GitHub app at https://app.pixee.ai")
+    console.print("Learn more about the Codemodder framework at https://codemodder.io")
+    console.print("\nCLI Version:", __version__, style="bold")
+    console.print("Codemodder versions:", style="bold")
+
+    for codemodder in [PYTHON_CODEMODDER, JAVA_CODEMODDER]:
+        result = subprocess.run(
+            [codemodder, "--version"],
+            stdout=subprocess.PIPE,
+            stderr=subprocess.DEVNULL,
+            check=True,
+        )
+        console.print(f"{codemodder}: {result.stdout.decode('utf-8').strip()}")
 
 
 @main.command()
