@@ -34,13 +34,16 @@ CODEMODDER_MAPPING = {
 console = Console()
 
 
+def print_logo():
+    console.print(logo, style="bold cyan")
+
+
 @click.group(invoke_without_command=True)
 @click.version_option(__version__)
 @click.pass_context
 def main(ctx):
-    console.print(logo, style="bold cyan")
-
     if ctx.invoked_subcommand is None:
+        print_logo()
         console.print(
             "Pixee is your automated product security engineer",
             style="bold",
@@ -74,18 +77,31 @@ def run_codemodder(codemodder, path, dry_run):
 @main.command()
 def triage():
     """Coming soon!"""
+    print_logo()
+    console.print("Coming soon!", style="bold")
 
 
 @main.command()
 @click.argument("path", nargs=1, required=False, type=click.Path(exists=True))
 @click.option("--dry-run", is_flag=True, help="Don't write changes to disk")
-@click.option("--language", type=click.Choice(["python", "java"]))
-@click.option("--output", type=click.Path(), help="Output CodeTF file path")
 @click.option(
-    "--explain", is_flag=True, help="Interactively explain codemodder results"
+    "--language",
+    type=click.Choice(["python", "java"]),
+    help="Restrict to a single language",
 )
-def fix(path, dry_run, language, output, explain):
+@click.option("--output", type=click.Path(), help="Output CodeTF file path")
+@click.option("--list-codemods", is_flag=True, help="List available codemods and exit")
+@click.option(
+    "--explain",
+    is_flag=True,
+    help="Interactively explain codemodder results (experimental)",
+)
+def fix(path, dry_run, language, output, list_codemods, explain):
     """Find problems and harden your code"""
+    if list_codemods:
+        return codemods()
+
+    print_logo()
     console.print("Welcome to Pixee!", style="bold")
     console.print("Let's find and fix vulnerabilities in your project.", style="bold")
     if not path:
@@ -142,7 +158,6 @@ def fix(path, dry_run, language, output, explain):
     console.print(f"Results written to {result_file}", style="bold")
 
 
-@main.command()
 def codemods():
     """List available codemods"""
     console.print("Available codemods:", style="bold")
