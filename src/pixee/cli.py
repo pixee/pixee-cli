@@ -34,9 +34,28 @@ CODEMODDER_MAPPING = {
 console = Console()
 
 
-@click.group()
-def main():
+@click.group(invoke_without_command=True)
+@click.version_option(__version__)
+@click.pass_context
+def main(ctx):
     console.print(logo, style="bold cyan")
+
+    if ctx.invoked_subcommand is None:
+        console.print(
+            "Pixee is your automated product security engineer",
+            style="bold",
+        )
+        console.print("Learn more at https://pixee.ai")
+        console.print("Install the GitHub app at https://app.pixee.ai")
+        console.print(
+            "Learn more about the Codemodder framework at https://codemodder.io\n",
+        )
+        console.print(
+            "To report bugs or request features: https://github.com/pixee/pixee-cli/issues"
+        )
+        console.print(f"\nCLI Version: {__version__}", style="bold", highlight=False)
+        console.print("License: AGPL-3\n", style="bold", highlight=False)
+        console.print(ctx.get_help(), highlight=False)
 
 
 def run_codemodder(codemodder, path, dry_run):
@@ -53,6 +72,11 @@ def run_codemodder(codemodder, path, dry_run):
 
 
 @main.command()
+def triage():
+    """Coming soon!"""
+
+
+@main.command()
 @click.argument("path", nargs=1, required=False, type=click.Path(exists=True))
 @click.option("--dry-run", is_flag=True, help="Don't write changes to disk")
 @click.option("--language", type=click.Choice(["python", "java"]))
@@ -61,7 +85,7 @@ def run_codemodder(codemodder, path, dry_run):
     "--explain", is_flag=True, help="Interactively explain codemodder results"
 )
 def fix(path, dry_run, language, output, explain):
-    """Find and fix vulnerabilities in your project"""
+    """Find problems and harden your code"""
     console.print("Welcome to Pixee!", style="bold")
     console.print("Let's find and fix vulnerabilities in your project.", style="bold")
     if not path:
