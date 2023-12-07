@@ -12,6 +12,7 @@ from prompt_toolkit import prompt
 from prompt_toolkit.completion.filesystem import PathCompleter
 from rich.console import Console
 from rich.markdown import Markdown
+from rich.table import Table
 
 from ._version import __version__
 from .logo import logo2 as logo
@@ -156,6 +157,31 @@ def fix(path, dry_run, language, output, list_codemods, explain):
 
     Path(result_file).write_text(json.dumps(combined_codetf, indent=2))
     console.print(f"Results written to {result_file}", style="bold")
+
+    summarize_results(combined_codetf)
+
+
+def summarize_results(combined_codetf):
+    results = [
+        result for result in combined_codetf["results"] if len(result["changeset"])
+    ]
+    if not len(results):
+        console.print("No changes applied", style="bold")
+        return
+
+    console.print(f"Applied the following {len(results)} codemods:", style="bold")
+    table = Table(show_header=True, header_style="bold")
+    table.add_column("Codemod", style="dim")
+    table.add_column("Summary", style="bold")
+    table.add_column("# Files Changed")
+
+    for result in results:
+        table.add_row(
+            result["codemod"],
+            result["summary"],
+            str(len(result["changeset"])),
+        )
+    console.print(table)
 
 
 def codemods():
