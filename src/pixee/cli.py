@@ -36,7 +36,14 @@ console = Console()
 
 
 def print_logo():
-    console.print(logo, style="bold cyan")
+    lines = logo.split("\n")
+    top_lines, bottom_lines = lines[: len(lines) // 2], lines[len(lines) // 2 :]
+    for line in top_lines:
+        console.print(line[:24], style="bold orange1", end="")
+        console.print(line[24:], style="bold cyan")
+    for line in bottom_lines:
+        console.print(line[:24], style="bold salmon1", end="")
+        console.print(line[24:], style="bold blue")
 
 
 @click.group(invoke_without_command=True)
