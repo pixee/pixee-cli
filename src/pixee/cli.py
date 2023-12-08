@@ -120,7 +120,7 @@ def fix(path, dry_run, language, output, list_codemods, explain, verbose):
 
     print_logo()
     console.print("Welcome to Pixee!", style="bold")
-    console.print("Let's find and fix vulnerabilities in your project.", style="bold")
+    console.print("Let's find problems and harden your code.", style="bold")
     if not path:
         path = prompt(
             "Path to the project to fix: ",
