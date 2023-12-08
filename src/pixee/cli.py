@@ -69,13 +69,16 @@ def main(ctx):
         console.print(ctx.get_help(), highlight=False)
 
 
-def run_codemodder(codemodder, path, dry_run):
+def run_codemodder(codemodder, path, dry_run: bool, verbose: int):
     common_codemodder_args = ["--dry-run"] if dry_run else []
+    if verbose > 1:
+        common_codemodder_args.append("--verbose")
 
     codetf = tempfile.NamedTemporaryFile()
     subprocess.run(
         [codemodder, "--output", codetf.name, path] + common_codemodder_args,
         stderr=subprocess.DEVNULL,
+        stdout=subprocess.PIPE if not verbose else None,
         check=True,
     )
 
@@ -104,7 +107,13 @@ def triage():
     is_flag=True,
     help="Interactively explain codemodder results (experimental)",
 )
-def fix(path, dry_run, language, output, list_codemods, explain):
+@click.option(
+    "-v",
+    "--verbose",
+    count=True,
+    help="Verbose output (repeat for more verbosity)",
+)
+def fix(path, dry_run, language, output, list_codemods, explain, verbose):
     """Find problems and harden your code"""
     if list_codemods:
         return codemods()
@@ -140,7 +149,7 @@ def fix(path, dry_run, language, output, list_codemods, explain):
 
         if glob(str(Path(path) / "**" / file_glob), recursive=True):
             console.print(f"Running {lang} codemods...", style="bold")
-            lang_codetf = run_codemodder(codemodder, path, dry_run)
+            lang_codetf = run_codemodder(codemodder, path, dry_run, verbose)
             results = json.load(lang_codetf)
             combined_codetf["results"].extend(results["results"])
 
