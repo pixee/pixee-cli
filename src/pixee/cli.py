@@ -12,6 +12,7 @@ from prompt_toolkit import prompt
 from prompt_toolkit.completion.filesystem import PathCompleter
 from rich.console import Console
 from rich.markdown import Markdown
+from rich.progress import Progress
 from rich.table import Table
 
 from ._version import __version__
@@ -69,18 +70,31 @@ def main(ctx):
         console.print(ctx.get_help(), highlight=False)
 
 
-def run_codemodder(codemodder, path, dry_run: bool, verbose: int):
+def run_codemodder(language: str, codemodder: str, path, dry_run: bool, verbose: int):
     common_codemodder_args = ["--dry-run"] if dry_run else []
-    if verbose > 1:
+    if verbose == 0 or verbose > 1:
         common_codemodder_args.append("--verbose")
 
     codetf = tempfile.NamedTemporaryFile()
-    subprocess.run(
-        [codemodder, "--output", codetf.name, path] + common_codemodder_args,
-        stderr=subprocess.DEVNULL,
-        stdout=subprocess.PIPE if not verbose else None,
-        check=True,
-    )
+
+    num_codemods = len(list_codemods(codemodder))
+
+    with Progress(disable=bool(verbose)) as progress:
+        task = progress.add_task(
+            f"Applying {num_codemods} {language} codemods",
+            total=num_codemods,
+        )
+        command = subprocess.Popen(
+            [codemodder, "--output", codetf.name, path] + common_codemodder_args,
+            stderr=subprocess.DEVNULL,
+            stdout=subprocess.PIPE if not verbose else None,
+        )
+        if command.stdout:
+            for line in iter(command.stdout.readline, b""):
+                if line.startswith(b"running codemod"):
+                    progress.advance(task)
+        command.wait()
+        progress.update(task, completed=num_codemods)
 
     return codetf
 
@@ -148,8 +162,7 @@ def fix(path, dry_run, language, output, list_codemods, explain, verbose):
             continue
 
         if glob(str(Path(path) / "**" / file_glob), recursive=True):
-            console.print(f"Running {lang} codemods...", style="bold")
-            lang_codetf = run_codemodder(codemodder, path, dry_run, verbose)
+            lang_codetf = run_codemodder(lang, codemodder, path, dry_run, verbose)
             results = json.load(lang_codetf)
             combined_codetf["results"].extend(results["results"])
 
@@ -185,7 +198,7 @@ def summarize_results(combined_codetf):
         console.print("No changes applied", style="bold")
         return
 
-    console.print(f"Applied the following {len(results)} codemods:", style="bold")
+    console.print(f"Found and fixed the following {len(results)} issues:", style="bold")
     table = Table(show_header=True, header_style="bold")
     table.add_column("Codemod", style="dim")
     table.add_column("Summary", style="bold")
@@ -200,19 +213,24 @@ def summarize_results(combined_codetf):
     console.print(table)
 
 
+def list_codemods(codemodder: str):
+    result = subprocess.run(
+        [codemodder, "--list"],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.DEVNULL,
+        check=True,
+    )
+    return result.stdout.decode("utf-8").splitlines()
+
+
 def codemods():
     """List available codemods"""
     console.print("Available codemods:", style="bold")
 
     codemods = []
     for codemodder in [PYTHON_CODEMODDER, JAVA_CODEMODDER]:
-        result = subprocess.run(
-            [codemodder, "--list"],
-            stdout=subprocess.PIPE,
-            stderr=subprocess.DEVNULL,
-            check=True,
-        )
-        codemods.extend(result.stdout.decode("utf-8").splitlines())
+        result = list_codemods(codemodder)
+        codemods.extend(result)
     # TODO: filter out non-pixee codemods?
     console.print(sorted(codemods))
 
