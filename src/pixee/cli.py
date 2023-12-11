@@ -145,6 +145,12 @@ def fix(path, dry_run, language, output, list_codemods, explain, verbose):
         )
 
     console.print("Dry run:", dry_run, style="bold")
+    console.print(
+        "No changes will be written to disk"
+        if dry_run
+        else "Changes will be written to disk",
+        style="bold",
+    )
 
     combined_codetf = {
         "vendor": "pixee",
