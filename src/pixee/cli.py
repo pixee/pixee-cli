@@ -25,14 +25,8 @@ PYTHON_CODEMODDER = os.environ.get("PIXEE_PYTHON_CODEMODDER", "pixee-python-code
 JAVA_CODEMODDER = os.environ.get("PIXEE_JAVA_CODEMODDER", "pixee-java-codemods")
 
 CODEMODDER_MAPPING = {
-    "python": (
-        os.environ.get("PIXEE_PYTHON_CODEMODDER", "pixee-python-codemodder"),
-        "*.py",
-    ),
-    "java": (
-        os.environ.get("PIXEE_JAVA_CODEMODDER", "pixee-java-codemodder"),
-        "*.java",
-    ),
+    "python": (PYTHON_CODEMODDER, "*.py"),
+    "java": (JAVA_CODEMODDER, "*.java"),
 }
 
 # It's not ideal for the CLI to have to encode this information but it's necessary for now
