@@ -12,6 +12,7 @@ import tempfile
 import click
 from prompt_toolkit import prompt
 from prompt_toolkit.completion.filesystem import PathCompleter
+from questionary import select, press_any_key_to_continue
 from rich.console import Console
 from rich.markdown import Markdown
 from rich.progress import Progress
@@ -34,6 +35,8 @@ DEFAULT_EXCLUDED_CODEMODS = {
     "pixee:python/unused-imports",
     "pixee:python/order-imports",
 }
+
+DEFAULT_CODETF_PATH = "results.codetf.json"
 
 
 console = Console()
@@ -337,12 +340,67 @@ def fix(
                 console.print(Markdown(f"```diff\n{entry['diff']}```"))
             prompt("Press Enter to continue...")
 
-    result_file = Path(output or "results.codetf.json")
+    result_file = Path(output or DEFAULT_CODETF_PATH)
 
     Path(result_file).write_text(json.dumps(combined_codetf, indent=2))
     console.print(f"Results written to {result_file}", style="bold")
 
     summarize_results(combined_codetf)
+
+
+@main.command()
+@click.argument("path", nargs=1, required=False, type=click.Path(exists=True))
+def explain(path):
+    """
+    Interactively explain codemodder results (use after fix)
+
+    Reads the results file from the fix command and allows you to interactively
+    explain the changes made by a specific codemod.
+
+    By default, the results file is assumed to be `results.codetf.json` in the
+    current directory. You can specify a different path with the `path` argument.
+
+    Run `pixee fix` first to generate the results file.
+    """
+    result_file = Path(path or DEFAULT_CODETF_PATH)
+    if not result_file.exists():
+        raise click.BadParameter(f"Could not find results file {DEFAULT_CODETF_PATH}")
+
+    try:
+        combined_codetf = json.loads(result_file.read_text())
+    except json.JSONDecodeError:
+        console.print(f"Could not parse results file: {result_file}", style="bold")
+        return 1
+
+    results = [
+        result for result in combined_codetf["results"] if len(result["changeset"])
+    ]
+
+    console.print(f"Reading results from `{result_file}`", style="bold")
+    summarize_results(combined_codetf)
+    codemod = select(
+        "Which codemod result would you like to explain?",
+        choices=[result["codemod"] for result in results],
+    ).ask()
+
+    result = next(result for result in results if result["codemod"] == codemod)
+
+    name = result["codemod"]
+    summary = result["summary"]
+    description = result["description"]
+    console.print(f"{summary} ({name})", style="bold")
+    console.print(Markdown(description))
+
+    filename = select(
+        "Which file change would you like to see?",
+        choices=[entry["path"] for entry in result["changeset"]],
+    ).ask()
+
+    entry = next(entry for entry in result["changeset"] if entry["path"] == filename)
+    console.print(f"\n\nFile: {entry['path']}", style="bold")
+    console.print(Markdown(f"```diff\n{entry['diff']}```"))
+
+    return 0
 
 
 def summarize_results(combined_codetf):

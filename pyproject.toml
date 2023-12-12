@@ -13,7 +13,8 @@ description = "Pixee CLI"
 dependencies = [
     "codemodder",
     "click",
-    "prompt-toolkit"
+    "prompt-toolkit",
+    "questionary~=2.0.0",
 ]
 
 [project.urls]
