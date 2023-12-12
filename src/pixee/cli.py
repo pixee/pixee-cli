@@ -86,6 +86,15 @@ def validate_codemods(ctx, param, value) -> list[str]:
     return given_codemods
 
 
+def parse_path_patterns(ctx, param, value) -> list[str]:
+    del ctx, param
+
+    if not value:
+        return value
+
+    return value.split(",")
+
+
 def print_logo():
     lines = logo.split("\n")
     top_lines, bottom_lines = lines[: len(lines) // 2], lines[len(lines) // 2 :]
@@ -125,11 +134,17 @@ def run_codemodder(
     codemodder: str,
     path,
     codemods: list[Codemod],
+    path_include: list[str],
+    path_exclude: list[str],
     dry_run: bool,
     verbose: int,
 ):
     common_codemodder_args = ["--dry-run"] if dry_run else []
     common_codemodder_args.extend(["--codemod-include", ",".join(map(str, codemods))])
+    if path_include:
+        common_codemodder_args.extend(["--path-include", ",".join(path_include)])
+    if path_exclude:
+        common_codemodder_args.extend(["--path-exclude", ",".join(path_exclude)])
     if verbose == 0 or verbose > 1:
         common_codemodder_args.append("--verbose")
 
@@ -185,6 +200,16 @@ def triage():
     help="Comma-separated list of codemods to skip",
 )
 @click.option(
+    "--path-include",
+    callback=parse_path_patterns,
+    help="Comma-separated list of path patterns to include",
+)
+@click.option(
+    "--path-exclude",
+    callback=parse_path_patterns,
+    help="Comma-separated list of path patterns to exclude",
+)
+@click.option(
     "--explain",
     is_flag=True,
     help="Interactively explain codemodder results (experimental)",
@@ -205,6 +230,8 @@ def fix(
     verbose,
     codemod_include,
     codemod_exclude,
+    path_include,
+    path_exclude,
 ):
     """Find problems and harden your code"""
     if list_codemods:
@@ -286,6 +313,8 @@ def fix(
                 codemodder,
                 path,
                 codemods_by_lang,
+                path_include,
+                path_exclude,
                 dry_run,
                 verbose,
             )
