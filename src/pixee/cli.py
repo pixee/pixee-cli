@@ -212,6 +212,11 @@ def fix(
         console.print(sorted(codemods()))
         return
 
+    if codemod_include and codemod_exclude:
+        raise click.BadArgumentUsage(
+            "Cannot specify both --codemod-include and --codemod-exclude"
+        )
+
     print_logo()
     console.print("Welcome to Pixee!", style="bold")
     console.print("Let's find problems and harden your code.", style="bold")
@@ -249,6 +254,14 @@ def fix(
             codemod
             for codemod in all_codemods
             if str(codemod) in codemod_include or codemod.name in codemod_include
+        ]
+    # Validation occurs above to ensure this is mutually exclusive
+    if codemod_exclude:
+        all_codemods = [
+            codemod
+            for codemod in all_codemods
+            if str(codemod) not in codemod_exclude
+            and codemod.name not in codemod_exclude
         ]
 
     for lang, (codemodder, file_glob) in CODEMODDER_MAPPING.items():
