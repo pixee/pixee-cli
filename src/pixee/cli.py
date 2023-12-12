@@ -35,6 +35,12 @@ CODEMODDER_MAPPING = {
     ),
 }
 
+# It's not ideal for the CLI to have to encode this information but it's necessary for now
+DEFAULT_EXCLUDED_CODEMODS = {
+    "pixee:python/unused-imports",
+    "pixee:python/order-imports",
+}
+
 
 console = Console()
 
@@ -262,6 +268,12 @@ def fix(
             for codemod in all_codemods
             if str(codemod) not in codemod_exclude
             and codemod.name not in codemod_exclude
+        ]
+    elif not codemod_include:
+        all_codemods = [
+            codemod
+            for codemod in all_codemods
+            if str(codemod) not in DEFAULT_EXCLUDED_CODEMODS
         ]
 
     for lang, (codemodder, file_glob) in CODEMODDER_MAPPING.items():
