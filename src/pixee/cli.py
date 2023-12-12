@@ -1,10 +1,12 @@
 import datetime
+from functools import lru_cache, total_ordering
 from glob import glob
 import json
 import os
 from pathlib import Path
 import subprocess
 import sys
+import re
 import tempfile
 
 import click
@@ -33,7 +35,55 @@ CODEMODDER_MAPPING = {
     ),
 }
 
+
 console = Console()
+
+
+@total_ordering
+class Codemod:
+    def __init__(self, org: str, language: str, name: str):
+        self.org = org
+        self.language = language
+        self.name = name
+
+    @classmethod
+    def from_string(cls, codemod: str):
+        parsed = re.match(r"(.*):(.*)/(.*)", codemod)
+        assert parsed
+        return cls(parsed.group(1), parsed.group(2), parsed.group(3))
+
+    def __str__(self):
+        return f"{self.org}:{self.language}/{self.name}"
+
+    def __repr__(self):
+        return str(self)
+
+    def __eq__(self, other):
+        return str(self) == str(other)
+
+    def __lt__(self, other):
+        return str(self) < str(other)
+
+
+def validate_codemods(ctx, param, value) -> list[str]:
+    del ctx, param
+
+    if not value:
+        return value
+
+    available_codemods = codemods()
+    available_codemod_ids = {str(codemod) for codemod in available_codemods}
+    available_codemod_names = {codemod.name for codemod in available_codemods}
+    given_codemods: list[str] = [codemod for codemod in value.split(",") if codemod]
+    for codemod in given_codemods:
+        if (
+            codemod not in available_codemod_ids
+            and codemod not in available_codemod_names
+        ):
+            raise click.BadParameter(
+                f"Unknown codemod: {codemod}\nUse --list-codemods to see available codemods"
+            )
+    return given_codemods
 
 
 def print_logo():
@@ -70,14 +120,22 @@ def main(ctx):
         console.print(ctx.get_help(), highlight=False)
 
 
-def run_codemodder(language: str, codemodder: str, path, dry_run: bool, verbose: int):
+def run_codemodder(
+    language: str,
+    codemodder: str,
+    path,
+    codemods: list[Codemod],
+    dry_run: bool,
+    verbose: int,
+):
     common_codemodder_args = ["--dry-run"] if dry_run else []
+    common_codemodder_args.extend(["--codemod-include", ",".join(map(str, codemods))])
     if verbose == 0 or verbose > 1:
         common_codemodder_args.append("--verbose")
 
     codetf = tempfile.NamedTemporaryFile()
 
-    num_codemods = len(list_codemods(codemodder))
+    num_codemods = len(codemods)
 
     with Progress(disable=bool(verbose)) as progress:
         task = progress.add_task(
@@ -117,6 +175,16 @@ def triage():
 @click.option("--output", type=click.Path(), help="Output CodeTF file path")
 @click.option("--list-codemods", is_flag=True, help="List available codemods and exit")
 @click.option(
+    "--codemod-include",
+    callback=validate_codemods,
+    help="Comma-separated list of codemods to run",
+)
+@click.option(
+    "--codemod-exclude",
+    callback=validate_codemods,
+    help="Comma-separated list of codemods to skip",
+)
+@click.option(
     "--explain",
     is_flag=True,
     help="Interactively explain codemodder results (experimental)",
@@ -127,10 +195,22 @@ def triage():
     count=True,
     help="Verbose output (repeat for more verbosity)",
 )
-def fix(path, dry_run, language, output, list_codemods, explain, verbose):
+def fix(
+    path,
+    dry_run,
+    language,
+    output,
+    list_codemods,
+    explain,
+    verbose,
+    codemod_include,
+    codemod_exclude,
+):
     """Find problems and harden your code"""
     if list_codemods:
-        return codemods()
+        console.print("Available codemods:", style="bold")
+        console.print(sorted(codemods()))
+        return
 
     print_logo()
     console.print("Welcome to Pixee!", style="bold")
@@ -163,12 +243,33 @@ def fix(path, dry_run, language, output, list_codemods, explain, verbose):
 
     start = datetime.datetime.now()
 
+    all_codemods = codemods()
+    if codemod_include:
+        all_codemods = [
+            codemod
+            for codemod in all_codemods
+            if str(codemod) in codemod_include or codemod.name in codemod_include
+        ]
+
     for lang, (codemodder, file_glob) in CODEMODDER_MAPPING.items():
         if language and lang != language:
             continue
 
+        codemods_by_lang = [
+            codemod for codemod in all_codemods if codemod.language == lang
+        ]
+        if not codemods_by_lang:
+            continue
+
         if glob(str(Path(path) / "**" / file_glob), recursive=True):
-            lang_codetf = run_codemodder(lang, codemodder, path, dry_run, verbose)
+            lang_codetf = run_codemodder(
+                lang,
+                codemodder,
+                path,
+                codemods_by_lang,
+                dry_run,
+                verbose,
+            )
             results = json.load(lang_codetf)
             combined_codetf["results"].extend(results["results"])
 
@@ -219,6 +320,7 @@ def summarize_results(combined_codetf):
     console.print(table)
 
 
+@lru_cache()
 def list_codemods(codemodder: str):
     result = subprocess.run(
         [codemodder, "--list"],
@@ -229,16 +331,16 @@ def list_codemods(codemodder: str):
     return result.stdout.decode("utf-8").splitlines()
 
 
-def codemods():
+@lru_cache(maxsize=1)
+def codemods() -> list[Codemod]:
     """List available codemods"""
-    console.print("Available codemods:", style="bold")
 
     codemods = []
     for codemodder in [PYTHON_CODEMODDER, JAVA_CODEMODDER]:
         result = list_codemods(codemodder)
         codemods.extend(result)
     # TODO: filter out non-pixee codemods?
-    console.print(sorted(codemods))
+    return [Codemod.from_string(codemod) for codemod in codemods]
 
 
 if __name__ == "__main__":
