@@ -21,8 +21,8 @@ from ._version import __version__
 from .logo import logo2 as logo
 
 # Enable overrides for local testing purposes
-PYTHON_CODEMODDER = os.environ.get("PIXEE_PYTHON_CODEMODDER", "pixee-python-codemodder")
-JAVA_CODEMODDER = os.environ.get("PIXEE_JAVA_CODEMODDER", "pixee-java-codemodder")
+PYTHON_CODEMODDER = os.environ.get("PIXEE_PYTHON_CODEMODDER", "pixee-python-codemods")
+JAVA_CODEMODDER = os.environ.get("PIXEE_JAVA_CODEMODDER", "pixee-java-codemods")
 
 CODEMODDER_MAPPING = {
     "python": (
