@@ -182,7 +182,7 @@ def triage():
 
 @main.command()
 @click.argument("path", nargs=1, required=False, type=click.Path(exists=True))
-@click.option("--dry-run", is_flag=True, help="Don't write changes to disk")
+@click.option("--apply-fixes", is_flag=True, help="Apply changes to files")
 @click.option(
     "--language",
     type=click.Choice(["python", "java"]),
@@ -223,7 +223,7 @@ def triage():
 )
 def fix(
     path,
-    dry_run,
+    apply_fixes,
     language,
     output,
     list_codemods,
@@ -257,11 +257,10 @@ def fix(
             default=os.getcwd(),
         )
 
-    console.print("Dry run:", dry_run, style="bold")
     console.print(
-        "No changes will be written to disk"
-        if dry_run
-        else "Changes will be written to disk",
+        "Changes will be written to disk"
+        if apply_fixes
+        else "No changes will be written to disk (use --apply-fixes to make changes)",
         style="bold",
     )
 
@@ -316,7 +315,7 @@ def fix(
                 codemods_by_lang,
                 path_include,
                 path_exclude,
-                dry_run,
+                not apply_fixes,
                 verbose,
             )
             combined_codetf["results"].extend(results["results"])
