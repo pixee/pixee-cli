@@ -9,7 +9,7 @@
 *Pixee fixes vulnerabilities, hardens code, squashes bugs, and gives
 engineers more time to focus on the work that counts.*
 
-The Pixee CLI brings the power of Pixee's [Codemodder framework](https://codemodder.io) to your local development environment.
+The Pixee CLI brings the power of Pixee's [Codemodder framework](https://codemodder.io) to your local development environment. This provides a way for developers to try out Pixee before installing the GitHub app.
 
 ![Pixee CLI Demo](img/demo.gif)
 
