@@ -421,6 +421,9 @@ def summarize_results(combined_codetf):
             str(len(result["changeset"])),
         )
     console.print(table)
+    console.print(
+        "To experience the full benefits of automated code hardening via pull requests, install the Pixeebot GitHub app at https://app.pixee.ai"
+    )
 
 
 @lru_cache()
