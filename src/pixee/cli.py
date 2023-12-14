@@ -151,28 +151,26 @@ def run_codemodder(
     if verbose == 0 or verbose > 1:
         common_codemodder_args.append("--verbose")
 
-    codetf = tempfile.NamedTemporaryFile()
-
     num_codemods = len(codemods)
 
-    with Progress(disable=bool(verbose)) as progress:
-        task = progress.add_task(
-            f"Applying {num_codemods} {language} codemods",
-            total=num_codemods,
-        )
-        command = subprocess.Popen(
-            [codemodder, "--output", codetf.name, path] + common_codemodder_args,
-            stderr=subprocess.DEVNULL,
-            stdout=subprocess.PIPE if not verbose else None,
-        )
-        if command.stdout:
-            for line in iter(command.stdout.readline, b""):
-                if line.startswith(b"running codemod"):
-                    progress.advance(task)
-        command.wait()
-        progress.update(task, completed=num_codemods)
-
-    return codetf
+    with tempfile.NamedTemporaryFile() as codetf:
+        with Progress(disable=bool(verbose)) as progress:
+            task = progress.add_task(
+                f"Applying {num_codemods} {language} codemods",
+                total=num_codemods,
+            )
+            command = subprocess.Popen(
+                [codemodder, "--output", codetf.name, path] + common_codemodder_args,
+                stderr=subprocess.DEVNULL,
+                stdout=subprocess.PIPE if not verbose else None,
+            )
+            if command.stdout:
+                for line in iter(command.stdout.readline, b""):
+                    if line.startswith(b"running codemod"):
+                        progress.advance(task)
+            command.wait()
+            progress.update(task, completed=num_codemods)
+            return json.load(codetf)
 
 
 @main.command()
@@ -311,7 +309,7 @@ def fix(
             continue
 
         if glob(str(Path(path) / "**" / file_glob), recursive=True):
-            lang_codetf = run_codemodder(
+            results = run_codemodder(
                 lang,
                 codemodder,
                 path,
@@ -321,7 +319,6 @@ def fix(
                 dry_run,
                 verbose,
             )
-            results = json.load(lang_codetf)
             combined_codetf["results"].extend(results["results"])
 
     elapsed = datetime.datetime.now() - start
