@@ -20,6 +20,7 @@ from rich.table import Table
 
 from ._version import __version__
 from .logo import logo2 as logo
+from security import safe_command
 
 # Enable overrides for local testing purposes
 PYTHON_CODEMODDER = os.environ.get("PIXEE_PYTHON_CODEMODDER", "pixee-python-codemods")
@@ -159,7 +160,8 @@ def run_codemodder(
                 f"Applying {num_codemods} {language} codemods",
                 total=num_codemods,
             )
-            command = subprocess.Popen(
+            command = safe_command.run(
+                subprocess.Popen,
                 [codemodder, "--output", codetf.name, path] + common_codemodder_args,
                 stderr=subprocess.PIPE,
                 stdout=subprocess.PIPE if not verbose else None,
@@ -438,7 +440,8 @@ def summarize_results(combined_codetf):
 
 @lru_cache()
 def list_codemods(codemodder: str):
-    result = subprocess.run(
+    result = safe_command.run(
+        subprocess.run,
         [codemodder, "--list"],
         stdout=subprocess.PIPE,
         stderr=subprocess.DEVNULL,
