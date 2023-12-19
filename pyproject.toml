@@ -15,6 +15,7 @@ dependencies = [
     "click",
     "prompt-toolkit",
     "questionary~=2.0.0",
+    "security~=1.2.0",
 ]
 
 [project.urls]
