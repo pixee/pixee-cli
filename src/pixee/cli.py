@@ -161,7 +161,7 @@ def run_codemodder(
             )
             command = subprocess.Popen(
                 [codemodder, "--output", codetf.name, path] + common_codemodder_args,
-                stderr=subprocess.DEVNULL,
+                stderr=subprocess.PIPE,
                 stdout=subprocess.PIPE if not verbose else None,
             )
             if command.stdout:
@@ -169,6 +169,14 @@ def run_codemodder(
                     if line.startswith(b"running codemod"):
                         progress.advance(task)
             command.wait()
+            if command.returncode != 0:
+                console.print(
+                    f"Error running codemodder: {codemodder} (exit code {command.returncode})"
+                )
+                if command.stderr:
+                    console.print(command.stderr.read().decode("utf-8"))
+                sys.exit(1)
+
             progress.update(task, completed=num_codemods)
             return json.load(codetf)
 
