@@ -415,7 +415,10 @@ def summarize_results(combined_codetf):
         console.print("No changes applied", style="bold")
         return
 
-    console.print(f"Found and fixed the following {len(results)} issues:", style="bold")
+    console.print(
+        f"Found {len(results)} opportunities to harden and improve your code:",
+        style="bold",
+    )
     table = Table(show_header=True, header_style="bold")
     table.add_column("Codemod", style="dim")
     table.add_column("Summary", style="bold")
