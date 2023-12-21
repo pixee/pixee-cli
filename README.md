@@ -1,7 +1,7 @@
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="img/dark_mode_logo.png">
   <source media="(prefers-color-scheme: light)" srcset="img/light_mode_logo.png">
-  <img alt="Pixee Logo" src="img/light_mode_logo.png">
+  <img alt="Pixee Logo" src="https://github.com/pixee/pixee-cli/raw/main/img/light_mode_logo.png">
 </picture>
 
 # Pixee is your automated product security engineer
@@ -11,8 +11,7 @@ engineers more time to focus on the work that counts.*
 
 The Pixee CLI brings the power of Pixee's [Codemodder framework](https://codemodder.io) to your local development environment. This provides a way for developers to try out Pixee before installing the GitHub app.
 
-![Pixee CLI Demo](img/demo.gif)
-
+![Pixee CLI Demo](https://github.com/pixee/pixee-cli/raw/main/img/demo.gif)
 Learn more at https://pixee.ai! 
 
 Get the most out of Pixee by installing the Pixeebot GitHub app at
