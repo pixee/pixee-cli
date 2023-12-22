@@ -384,10 +384,13 @@ def explain(path):
 
     console.print(f"Reading results from `{result_file}`", style="bold")
     summarize_results(combined_codetf)
-    codemod = select(
-        "Which codemod result would you like to explain?",
-        choices=[result["codemod"] for result in results],
-    ).ask()
+    if (
+        codemod := select(
+            "Which codemod result would you like to explain?",
+            choices=[result["codemod"] for result in results],
+        ).ask()
+    ) is None:
+        return 0
 
     result = next(result for result in results if result["codemod"] == codemod)
 
@@ -397,10 +400,13 @@ def explain(path):
     console.print(f"{summary} ({name})", style="bold")
     console.print(Markdown(description))
 
-    filename = select(
-        "Which file change would you like to see?",
-        choices=[entry["path"] for entry in result["changeset"]],
-    ).ask()
+    if (
+        filename := select(
+            "Which file change would you like to see?",
+            choices=[entry["path"] for entry in result["changeset"]],
+        ).ask()
+    ) is None:
+        return 0
 
     entry = next(entry for entry in result["changeset"] if entry["path"] == filename)
     console.print(f"\n\nFile: {entry['path']}", style="bold")
