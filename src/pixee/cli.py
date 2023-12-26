@@ -334,17 +334,22 @@ def fix(
     combined_codetf["elapsed"] = int(elapsed.total_seconds() * 1000)
 
     if explain:
-        for result in combined_codetf["results"]:
-            name = result["codemod"]
-            summary = result["summary"]
-            description = result["description"]
-            console.print(f"{summary} ({name})", style="bold")
-            console.print(Markdown(description))
-            prompt("Press Enter to see the updated files")
-            for entry in result["changeset"]:
-                console.print(f"File: {entry['path']}", style="bold")
-                console.print(Markdown(f"```diff\n{entry['diff']}```"))
-            prompt("Press Enter to continue...")
+        results = [
+            result for result in combined_codetf["results"] if len(result["changeset"])
+        ]
+
+        if not results:
+            for result in combined_codetf["results"]:
+                name = result["codemod"]
+                summary = result["summary"]
+                description = result["description"]
+                console.print(f"{summary} ({name})", style="bold")
+                console.print(Markdown(description))
+                prompt("Press Enter to see the updated files")
+                for entry in result["changeset"]:
+                    console.print(f"File: {entry['path']}", style="bold")
+                    console.print(Markdown(f"```diff\n{entry['diff']}```"))
+                prompt("Press Enter to continue...")
 
     result_file = Path(output or DEFAULT_CODETF_PATH)
 
@@ -352,6 +357,41 @@ def fix(
     console.print(f"Results written to {result_file}", style="bold")
 
     summarize_results(combined_codetf)
+
+    if explain:
+        if results:
+            if (
+                codemod := select(
+                    "Which codemod result would you like to explain?",
+                    choices=[result["codemod"] for result in results],
+                ).ask()
+            ) is None:
+                return 0
+            result = next(result for result in results if result["codemod"] == codemod)
+
+            name = result["codemod"]
+            summary = result["summary"]
+            description = result["description"]
+            console.print(f"{summary} ({name})", style="bold")
+            console.print(Markdown(description))
+
+            if (
+                filename := select(
+                    "Which file change would you like to see?",
+                    choices=[entry["path"] for entry in result["changeset"]],
+                ).ask()
+            ) is None:
+                return 0
+
+            entry = next(
+                entry for entry in result["changeset"] if entry["path"] == filename
+            )
+            console.print(f"\n\nFile: {entry['path']}", style="bold")
+            console.print(Markdown(f"```diff\n{entry['diff']}```"))
+    elif results:
+        console.print(
+            "To View the changes, run `pixee explain` or 'pixee fix --explain' for more options"
+        )
 
 
 @main.command()
