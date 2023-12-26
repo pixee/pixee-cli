@@ -390,7 +390,7 @@ def fix(
             console.print(Markdown(f"```diff\n{entry['diff']}```"))
     elif results:
         console.print(
-            "To View the changes, run `pixee explain` or 'pixee fix --explain' for more options"
+            "To View the changes, run 'pixee explain' or 'pixee fix --explain' for more options"
         )
 
 
