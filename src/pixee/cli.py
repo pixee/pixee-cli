@@ -346,12 +346,7 @@ def fix(
                 console.print(Markdown(f"```diff\n{entry['diff']}```"))
             prompt("Press Enter to continue...")
 
-    result_file = Path(output or DEFAULT_CODETF_PATH)
-
-    Path(result_file).write_text(json.dumps(combined_codetf, indent=2))
-    console.print(f"Results written to {result_file}", style="bold")
-
-    summarize_results(combined_codetf)
+    summarize_results(combined_codetf, output, saved_to_file=True)
 
 
 @main.command()
@@ -384,6 +379,10 @@ def explain(path):
 
     console.print(f"Reading results from `{result_file}`", style="bold")
     summarize_results(combined_codetf)
+
+    if not results:
+        return 0
+
     if (
         codemod := select(
             "Which codemod result would you like to explain?",
@@ -415,13 +414,18 @@ def explain(path):
     return 0
 
 
-def summarize_results(combined_codetf):
+def summarize_results(combined_codetf, output=None, saved_to_file=False):
     results = [
         result for result in combined_codetf["results"] if len(result["changeset"])
     ]
     if not len(results):
         console.print("No changes applied", style="bold")
         return
+
+    if saved_to_file and results:
+        result_file = Path(output or DEFAULT_CODETF_PATH)
+        Path(result_file).write_text(json.dumps(combined_codetf, indent=2))
+        console.print(f"Results written to {result_file}", style="bold")
 
     console.print(
         f"Found {len(results)} opportunities to harden and improve your code:",
