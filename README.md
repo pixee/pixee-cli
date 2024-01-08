@@ -40,7 +40,7 @@ After installation, run the `pixee` command to see instructions and options.
 Currently we support codemods for Java and Python. Stay tuned for additional language support at https://pixee.ai!
 
 ### What happens to my code?
-The Pixee CLI currently runs most detection and fixes locally to your own host machine. Any features that require network access to a third-party service (e.g. OpenAI) will require explicit opt-in. We promise to be transparent when this is the case.
+The Pixee CLI currently runs most detection and fixes locally to your own host machine. Any features that require network access to a third-party service (e.g. OpenAI) will require explicit opt-in. We promise to be transparent when this is the case. **Your code will not leave your host machine unless you explicitly opt-in to a feature that requires network access.**
 
 ### How can I install the GitHub application?
 Get the most out of Pixee by installing the Pixeebot GitHub app at https://app.pixee.ai. Or find us on [GitHub Marketplace](https://github.com/apps/pixeebot).
