@@ -32,7 +32,13 @@ brew install pixee
 
 ## Usage
 
-After installation, run the `pixee` command to see instructions and options.
+After installation, you can run the `pixee` command to see instructions and options. 
+
+To simply scan some code and see possible changes to make:
+
+```
+pixee fix /my/project/directory/
+```
 
 ## F.A.Q.
 
