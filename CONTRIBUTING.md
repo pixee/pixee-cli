@@ -23,3 +23,7 @@ To apply `pre-commit` to all files:
 
 To run a specific `pre-commit` check (e.g. `black`):
 `pre-commit run black`
+
+
+## CLA
+Please sign the CLA after making a pull request
