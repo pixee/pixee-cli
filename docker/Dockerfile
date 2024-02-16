@@ -20,4 +20,4 @@ RUN wget https://worker-brew.pixee.workers.dev/ad/6c/3c4ada32a280b207b65672324cb
 RUN python3 -m pip install ./pixee-0.5.5.tar.gz
 
 COPY bin ./bin
-ENV PATH="${PATH}:/pixee/bin"Doclkerfile
+ENV PATH="${PATH}:/pixee/bin"
