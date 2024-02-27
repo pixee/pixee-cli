@@ -22,9 +22,9 @@ def main():
         print("{0}: {1}".format(name, value))
     
     filename = str(sys.argv[1])
-    working_dir = os.path.dirname(os.path.abspath(filename))
+    #working_dir = os.path.dirname(os.path.abspath(filename))
     
-    with open(filename, 'r') as file:
+    with open(filename, 'r', encoding="utf-8") as file:
         data = json.load(file)
 
     # Initialize GitLab client
@@ -66,7 +66,7 @@ def main():
         
         
                     file.content = new_file
-                    commit = file.save(
+                    file.save(
                         branch=new_branch_name,
                         commit_message=result["summary"]
                     )
