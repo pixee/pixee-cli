@@ -1,6 +1,6 @@
 pixee:
   image: codemodder/pixee-ci-gitlab:0.0.2
-  script: 
+  script:
     - FILES=$(git --no-pager diff --name-only $CI_MERGE_REQUEST_DIFF_BASE_SHA...HEAD)
     - 'FILESTR=$(echo "$FILES" | sed "s/^/**/" | tr "\n" ",")'
     - pixee fix --apply-fixes --path-include $FILESTR $CI_PROJECT_DIR
