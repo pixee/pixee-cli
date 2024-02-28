@@ -1,8 +1,10 @@
 from bitbucket_client import BitbucketClient
-from pprint import pprint
-
+from secrets import token_hex
 from dotenv import load_dotenv
 import os
+import sys
+import json
+import whatthepatch
 
 load_dotenv()
 
@@ -13,30 +15,80 @@ repository_slug = os.environ.get("BITBUCKET_REPO_SLUG")
 workspace = os.environ.get("BITBUCKET_WORKSPACE")
 api_url = os.environ.get("BITBUCKET_API_URL") or "https://api.bitbucket.org/2.0/"
 workspace = os.environ.get("BITBUCKET_WORKSPACE")
+pull_request_id = os.environ.get("BITBUCKET_PR_ID")
+
+filename = str(sys.argv[1])
+
+with open(filename, "r", encoding="utf-8") as file:
+    data = json.load(file)
 
 bitbucket = BitbucketClient(api_token)
 
-new_branch_name = "pixee_test_matt_13"
+# get info about the current pull request
+pull_request_info = bitbucket.get_pull_request_info(
+    workspace, repository_slug, pull_request_id
+)
+source_title = pull_request_info["title"]
+pr_title = f"Hardening Suggestions for: '{source_title}'."
 
-source_title = "pixee test pr 1"
-description = "test description"
+# create a new branch with a unique name
+new_branch_name = f"pixee_{pull_request_id}_{token_hex(4)}"
 
-destination_branch = "master"
-
-# print(bitbucket.get_repo_info(workspace, repository_slug))
-# print(bitbucket.create_branch(workspace, repository_slug, new_branch_name, "master"))
-# content = bitbucket.read_file(workspace, repository_slug, "README.md", new_branch_name)
-# content = content.decode('UTF-8')
-# print(content)
-# print(bitbucket.commit_file(workspace, repository_slug, "README.md", new_branch_name, "test", f"{content}\nthis is a test"))
+destination_branch = pull_request_info["source"]["branch"]["name"]
+bitbucket.create_branch(workspace, repository_slug, new_branch_name, destination_branch)
 
 
-result = bitbucket.create_pull_request(
+description = ""
+
+for result in data["results"]:
+    if len(result["changeset"]):
+        # print(result["summary"])
+        description = "## {}\n{}\n\n".format(result["summary"], result["description"])
+        for entry in result["changeset"]:
+            try:
+                print(entry["path"])
+
+                original_file_content = bitbucket.read_file(
+                    workspace, repository_slug, entry["path"], new_branch_name
+                )
+                original_file_content = original_file_content.decode("UTF-8")
+
+                diff = [x for x in whatthepatch.parse_patch(entry["diff"])]
+                diff = diff[0]
+
+                new_file = whatthepatch.apply_diff(
+                    diff, original_file_content, use_patch=True
+                )
+                new_file = "\n".join(new_file[0])
+
+                bitbucket.commit_file(
+                    workspace,
+                    repository_slug,
+                    entry["path"],
+                    new_branch_name,
+                    result["summary"],
+                    new_file,
+                )
+
+            except Exception as e:
+                print("The error is: ", e)
+
+new_pr = bitbucket.create_pull_request(
     workspace,
     repository_slug,
-    f"Hardening Suggestions for {source_title}",
+    pr_title,
     description,
     new_branch_name,
     destination_branch,
 )
-pprint(result)
+
+print(new_pr)
+
+# Markdown formatted comment TODO add URL to new PR
+comment = """
+## Pixee has reviewed your code.
+"""
+
+result = bitbucket.add_comment_to_pull_request(
+    workspace, repository_slug, pull_request_id, comment
+)

@@ -1,5 +1,4 @@
 import requests
-import base64
 
 
 class BitbucketClient:
@@ -100,4 +99,21 @@ class BitbucketClient:
             "reviewers": [],
         }
 
+        return self._make_request("POST", url, data)
+
+    def get_pull_request_info(self, workspace, repo_slug, pull_request_id):
+        """Retrieve information about a specific pull request"""
+        url = f"repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}"
+        return self._make_request("GET", url)
+
+    def add_comment_to_pull_request(
+        self, workspace, repo_slug, pull_request_id, comment
+    ):
+        """Add a Markdown formatted comment to a pull request"""
+        url = f"repositories/{workspace}/{repo_slug}/pullrequests/{pull_request_id}/comments"
+        data = {
+            "content": {
+                "raw": comment  # The comment is expected to be in Markdown format
+            }
+        }
         return self._make_request("POST", url, data)
