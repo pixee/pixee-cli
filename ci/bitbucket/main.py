@@ -9,8 +9,6 @@ import whatthepatch
 load_dotenv()
 
 api_token = os.environ.get("ACCESS_TOKEN")
-
-project_key = os.environ.get("BITBUCKET_PROJECT_KEY")
 repository_slug = os.environ.get("BITBUCKET_REPO_SLUG")
 workspace = os.environ.get("BITBUCKET_WORKSPACE")
 api_url = os.environ.get("BITBUCKET_API_URL") or "https://api.bitbucket.org/2.0/"
@@ -46,14 +44,12 @@ for result in data["results"]:
         description = "## {}\n{}\n\n".format(result["summary"], result["description"])
         for entry in result["changeset"]:
             try:
-                print(entry["path"])
-
                 original_file_content = bitbucket.read_file(
                     workspace, repository_slug, entry["path"], new_branch_name
                 )
                 original_file_content = original_file_content.decode("UTF-8")
 
-                diff = [x for x in whatthepatch.parse_patch(entry["diff"])]
+                diff = list(whatthepatch.parse_patch(entry["diff"]))
                 diff = diff[0]
 
                 new_file = whatthepatch.apply_diff(
@@ -81,12 +77,11 @@ new_pr = bitbucket.create_pull_request(
     new_branch_name,
     destination_branch,
 )
-
-print(new_pr)
+pr_link = new_pr["links"]["html"]["href"]
 
 # Markdown formatted comment TODO add URL to new PR
-comment = """
-## Pixee has reviewed your code.
+comment = f"""
+Pixee has reviewed the code made [some suggestions]({pr_link}).
 """
 
 result = bitbucket.add_comment_to_pull_request(
