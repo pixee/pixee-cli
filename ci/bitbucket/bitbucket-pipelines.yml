@@ -1,0 +1,16 @@
+image: atlassian/default-image:3
+
+pipelines:
+  pull-requests:
+    '**': # This will run for pull requests targeting any branch
+      - step:
+          name: "Pixee PR"
+          script:
+            - echo "Pixee PR run"
+            - |
+              echo "BITBUCKET_PR_DESTINATION_BRANCH is $BITBUCKET_PR_DESTINATION_BRANCH";
+              echo "BITBUCKET_BRANCH is $BITBUCKET_BRANCH";
+              if [[ ${#BITBUCKET_PR_DESTINATION_BRANCH} > 0 ]] && [[ $BITBUCKET_PR_DESTINATION_BRANCH != 'master' ]]; then
+                echo "This is not a PR on master so we're exiting." && exit 0;
+              fi
+            - pipe: docker://codemodder/pixee-ci-bitbucket:0.0.3
