@@ -38,10 +38,16 @@ bitbucket.create_branch(workspace, repository_slug, new_branch_name, destination
 
 description = ""
 
+made_change = False
+
 for result in data["results"]:
     if len(result["changeset"]):
         # print(result["summary"])
         description = "## {}\n{}\n\n".format(result["summary"], result["description"])
+
+        if len(result["changeset"]) >= 1:
+            made_change = True
+
         for entry in result["changeset"]:
             try:
                 original_file_content = bitbucket.read_file(
@@ -69,21 +75,25 @@ for result in data["results"]:
             except Exception as e:
                 print("The error is: ", e)
 
-new_pr = bitbucket.create_pull_request(
-    workspace,
-    repository_slug,
-    pr_title,
-    description,
-    new_branch_name,
-    destination_branch,
-)
-pr_link = new_pr["links"]["html"]["href"]
+if made_change:
+    new_pr = bitbucket.create_pull_request(
+        workspace,
+        repository_slug,
+        pr_title,
+        description,
+        new_branch_name,
+        destination_branch,
+    )
+    pr_link = new_pr["links"]["html"]["href"]
 
-# Markdown formatted comment TODO add URL to new PR
-comment = f"""
-Pixee has reviewed the code made [some suggestions]({pr_link}).
-"""
+    # Markdown formatted comment TODO add URL to new PR
+    comment = f"""
+    Pixee has reviewed the code made [some suggestions]({pr_link}).
+    """
 
-result = bitbucket.add_comment_to_pull_request(
-    workspace, repository_slug, pull_request_id, comment
-)
+    result = bitbucket.add_comment_to_pull_request(
+        workspace, repository_slug, pull_request_id, comment
+    )
+else:
+    print("No changes made.")
+    sys.exit(0)
