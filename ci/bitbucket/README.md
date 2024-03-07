@@ -10,6 +10,7 @@
 
 <img src="../assets/bitbucket/access_tokens.png" width=200/>
 
+
 3. Click on the “Create Repository Access Token” 
 4. Give the token a name (Pixee for example) and check the box for under “Pull request” for “write” access. This will add all the other necessary scopes automatically. 
 

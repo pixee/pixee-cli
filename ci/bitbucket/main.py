@@ -8,7 +8,7 @@ import whatthepatch
 
 load_dotenv()
 
-api_token = os.environ.get("ACCESS_TOKEN")
+api_token = os.environ.get("BITBUCKET_ACCESS_TOKEN_PIXEE")
 repository_slug = os.environ.get("BITBUCKET_REPO_SLUG")
 workspace = os.environ.get("BITBUCKET_WORKSPACE")
 api_url = os.environ.get("BITBUCKET_API_URL") or "https://api.bitbucket.org/2.0/"
@@ -20,7 +20,7 @@ filename = str(sys.argv[1])
 with open(filename, "r", encoding="utf-8") as file:
     data = json.load(file)
 
-bitbucket = BitbucketClient(api_token)
+bitbucket = BitbucketClient(api_token, api_url)
 
 # get info about the current pull request
 pull_request_info = bitbucket.get_pull_request_info(
