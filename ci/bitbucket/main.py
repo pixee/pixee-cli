@@ -8,7 +8,7 @@ import whatthepatch
 
 load_dotenv()
 
-api_token = os.environ.get("ACCESS_TOKEN")
+api_token = os.environ.get("BITBUCKET_ACCESS_TOKEN_PIXEE")
 repository_slug = os.environ.get("BITBUCKET_REPO_SLUG")
 workspace = os.environ.get("BITBUCKET_WORKSPACE")
 api_url = os.environ.get("BITBUCKET_API_URL") or "https://api.bitbucket.org/2.0/"
