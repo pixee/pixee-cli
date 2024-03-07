@@ -2,7 +2,7 @@ import requests
 
 
 class BitbucketClient:
-    def __init__(self, api_token, base_url="https://api.bitbucket.org/2.0"):
+    def __init__(self, api_token, base_url="https://api.bitbucket.org/2.0/"):
         self.headers = {
             "Accept": "application/json",
             "Authorization": f"Bearer {api_token}",
@@ -11,7 +11,7 @@ class BitbucketClient:
 
     def _make_request(self, method, url, data=None, **kwargs):
         """Generic method to make HTTP requests"""
-        full_url = f"{self.base_url}/{url}"
+        full_url = f"{self.base_url}{url}"
         response = requests.request(
             method, full_url, json=data, headers=self.headers, timeout=10, **kwargs
         )
@@ -71,7 +71,7 @@ class BitbucketClient:
         data = {"branch": branch, "message": commit_message}
         files = {file_path: content}
         url = f"repositories/{workspace}/{repo_slug}/src"
-        full_url = f"{self.base_url}/{url}"
+        full_url = f"{self.base_url}{url}"
         response = requests.post(
             full_url, data=data, files=files, headers=self.headers, timeout=10
         )

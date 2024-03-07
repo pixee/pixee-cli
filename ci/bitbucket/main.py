@@ -20,7 +20,7 @@ filename = str(sys.argv[1])
 with open(filename, "r", encoding="utf-8") as file:
     data = json.load(file)
 
-bitbucket = BitbucketClient(api_token)
+bitbucket = BitbucketClient(api_token, api_url)
 
 # get info about the current pull request
 pull_request_info = bitbucket.get_pull_request_info(
