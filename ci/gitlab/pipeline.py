@@ -1,10 +1,10 @@
 import os
 import gitlab
-import random
 import sys
 import json
 import whatthepatch
 import base64
+import secrets
 
 
 # GitLab settings
@@ -13,7 +13,7 @@ api_token = os.environ.get("API_TOKEN")
 project_id = os.environ.get("CI_MERGE_REQUEST_PROJECT_ID")
 source_branch = os.environ.get("CI_MERGE_REQUEST_SOURCE_BRANCH_NAME")
 new_branch_name = "pixee_" + str(
-    random.randint(0, 1000)
+    secrets.SystemRandom().randint(0, 1000)
 )  # Replace with the desired new branch name
 merge_id = os.environ.get("CI_MERGE_REQUEST_IID")
 
