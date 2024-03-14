@@ -9,7 +9,7 @@ import secrets
 
 # GitLab settings
 gitlab_url = "https://gitlab.com"  # Replace with your GitLab URL
-api_token = os.environ.get("API_TOKEN")
+api_token = os.environ.get("GITLAB_API_TOKEN_PIXEE")
 project_id = os.environ.get("CI_MERGE_REQUEST_PROJECT_ID")
 source_branch = os.environ.get("CI_MERGE_REQUEST_SOURCE_BRANCH_NAME")
 new_branch_name = "pixee_" + str(
@@ -40,6 +40,8 @@ def main():
     print(f"Created a new branch: {branch.name}")
 
     description = ""
+
+    has_change = False
 
     for result in data["results"]:
         if len(result["changeset"]):
@@ -72,29 +74,32 @@ def main():
 
                     file.content = new_file
                     file.save(branch=new_branch_name, commit_message=result["summary"])
-                    print(file)
+                    has_change = True
+
                 except Exception as e:
                     print("The error is: ", e)
+    if has_change:
+        new_mr = project.mergerequests.create(
+            {
+                "source_branch": new_branch_name,
+                "target_branch": source_branch,
+                "title": f"Hardening Suggestions for {source_title}",
+                "description": description,
+            }
+        )
+        print(f"Hardening Suggestions for {source_branch}")
+        print(new_mr.web_url)
 
-    new_mr = project.mergerequests.create(
-        {
-            "source_branch": new_branch_name,
-            "target_branch": source_branch,
-            "title": f"Hardening Suggestions for {source_title}",
-            "description": description,
-        }
-    )
-    print(f"Hardening Suggestions for {source_branch}")
-    print(new_mr.web_url)
+        merge_request = project.mergerequests.get(merge_id)
 
-    merge_request = project.mergerequests.get(merge_id)
-
-    # Add a comment to the merge request
-    merge_request.notes.create(
-        {
-            "body": f"Pixee has created some suggestions in: [Hardening Suggestions for {source_branch}]({new_mr.web_url})"
-        }
-    )
+        # Add a comment to the merge request
+        merge_request.notes.create(
+            {
+                "body": f"Pixee has created some suggestions in: [Hardening Suggestions for {source_branch}]({new_mr.web_url})"
+            }
+        )
+    else:
+        print("No changes made.")
 
     # print(commit)
 
