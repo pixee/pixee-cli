@@ -8,7 +8,7 @@ import secrets
 
 
 # GitLab settings
-gitlab_url = "https://gitlab.com"  # Replace with your GitLab URL
+gitlab_url = os.environ.get("GITLAB_API_URL") or "https://gitlab.com"
 api_token = os.environ.get("GITLAB_API_TOKEN_PIXEE")
 project_id = os.environ.get("CI_MERGE_REQUEST_PROJECT_ID")
 source_branch = os.environ.get("CI_MERGE_REQUEST_SOURCE_BRANCH_NAME")
@@ -21,9 +21,6 @@ source_title = os.environ.get("CI_MERGE_REQUEST_TITLE")
 
 
 def main():
-    for name, value in os.environ.items():
-        print("{0}: {1}".format(name, value))
-
     filename = str(sys.argv[1])
     # working_dir = os.path.dirname(os.path.abspath(filename))
 
@@ -100,8 +97,6 @@ def main():
         )
     else:
         print("No changes made.")
-
-    # print(commit)
 
 
 if __name__ == "__main__":
