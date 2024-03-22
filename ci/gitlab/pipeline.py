@@ -8,22 +8,25 @@ import secrets
 
 
 # GitLab settings
-gitlab_url = "https://gitlab.com"  # Replace with your GitLab URL
-api_token = os.environ.get("API_TOKEN")
-project_id = os.environ.get("CI_MERGE_REQUEST_PROJECT_ID")
-source_branch = os.environ.get("CI_MERGE_REQUEST_SOURCE_BRANCH_NAME")
+gitlab_url = os.environ.get("GITLAB_API_URL") or "https://gitlab.com"
+api_token = os.environ.get("GITLAB_API_TOKEN_PIXEE")
+project_id = os.environ.get("CI_MERGE_REQUEST_PROJECT_ID") or os.environ.get(
+    "CI_PROJECT_ID"
+)
+source_branch = os.environ.get("CI_MERGE_REQUEST_SOURCE_BRANCH_NAME") or os.environ.get(
+    "CI_COMMIT_REF_NAME"
+)
 new_branch_name = "pixee_" + str(
     secrets.SystemRandom().randint(0, 1000)
 )  # Replace with the desired new branch name
 merge_id = os.environ.get("CI_MERGE_REQUEST_IID")
 
-source_title = os.environ.get("CI_MERGE_REQUEST_TITLE")
+source_title = os.environ.get("CI_MERGE_REQUEST_TITLE") or os.environ.get(
+    "CI_PROJECT_NAME"
+)
 
 
 def main():
-    for name, value in os.environ.items():
-        print("{0}: {1}".format(name, value))
-
     filename = str(sys.argv[1])
     # working_dir = os.path.dirname(os.path.abspath(filename))
 
@@ -40,6 +43,8 @@ def main():
     print(f"Created a new branch: {branch.name}")
 
     description = ""
+
+    has_change = False
 
     for result in data["results"]:
         if len(result["changeset"]):
@@ -72,31 +77,33 @@ def main():
 
                     file.content = new_file
                     file.save(branch=new_branch_name, commit_message=result["summary"])
-                    print(file)
+                    has_change = True
+
                 except Exception as e:
                     print("The error is: ", e)
+    if has_change:
+        new_mr = project.mergerequests.create(
+            {
+                "source_branch": new_branch_name,
+                "target_branch": source_branch,
+                "title": f"Pixee Hardening Suggestions for {source_title}",
+                "description": description,
+            }
+        )
+        print(f"Hardening Suggestions for {source_branch}")
+        print(new_mr.web_url)
 
-    new_mr = project.mergerequests.create(
-        {
-            "source_branch": new_branch_name,
-            "target_branch": source_branch,
-            "title": f"Hardening Suggestions for {source_title}",
-            "description": description,
-        }
-    )
-    print(f"Hardening Suggestions for {source_branch}")
-    print(new_mr.web_url)
+        if merge_id:
+            merge_request = project.mergerequests.get(merge_id)
 
-    merge_request = project.mergerequests.get(merge_id)
-
-    # Add a comment to the merge request
-    merge_request.notes.create(
-        {
-            "body": f"Pixee has created some suggestions in: [Hardening Suggestions for {source_branch}]({new_mr.web_url})"
-        }
-    )
-
-    # print(commit)
+            # Add a comment to the merge request
+            merge_request.notes.create(
+                {
+                    "body": f"Pixee has created some suggestions in: [Hardening Suggestions for {source_branch}]({new_mr.web_url})"
+                }
+            )
+    else:
+        print("No changes made.")
 
 
 if __name__ == "__main__":

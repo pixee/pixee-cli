@@ -1,11 +1,7 @@
 pixee:
-  image: codemodder/pixee-ci-gitlab:0.0.2
+  image: codemodder/pixee-ci-gitlab:0.0.3
   script:
-    - FILES=$(git --no-pager diff --name-only $CI_MERGE_REQUEST_DIFF_BASE_SHA...HEAD)
-    - 'FILESTR=$(echo "$FILES" | sed "s/^/**/" | tr "\n" ",")'
-    - pixee fix --apply-fixes --path-include $FILESTR $CI_PROJECT_DIR
-    - pip install -r /pixee/gitlab/requirements.txt
-    - python /pixee/gitlab/pipeline.py ./results.codetf.json
+    - /pixee/gitlab/ci.sh
 
   artifacts:
     paths:
