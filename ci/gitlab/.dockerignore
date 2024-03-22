@@ -4,3 +4,4 @@
 Dockerfile
 .docker
 .dockerignore
+test_merge.py
