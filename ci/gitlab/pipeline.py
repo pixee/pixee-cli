@@ -10,14 +10,20 @@ import secrets
 # GitLab settings
 gitlab_url = os.environ.get("GITLAB_API_URL") or "https://gitlab.com"
 api_token = os.environ.get("GITLAB_API_TOKEN_PIXEE")
-project_id = os.environ.get("CI_MERGE_REQUEST_PROJECT_ID")
-source_branch = os.environ.get("CI_MERGE_REQUEST_SOURCE_BRANCH_NAME")
+project_id = os.environ.get("CI_MERGE_REQUEST_PROJECT_ID") or os.environ.get(
+    "CI_PROJECT_ID"
+)
+source_branch = os.environ.get("CI_MERGE_REQUEST_SOURCE_BRANCH_NAME") or os.environ.get(
+    "CI_COMMIT_REF_NAME"
+)
 new_branch_name = "pixee_" + str(
     secrets.SystemRandom().randint(0, 1000)
 )  # Replace with the desired new branch name
 merge_id = os.environ.get("CI_MERGE_REQUEST_IID")
 
-source_title = os.environ.get("CI_MERGE_REQUEST_TITLE")
+source_title = os.environ.get("CI_MERGE_REQUEST_TITLE") or os.environ.get(
+    "CI_PROJECT_NAME"
+)
 
 
 def main():
@@ -80,21 +86,22 @@ def main():
             {
                 "source_branch": new_branch_name,
                 "target_branch": source_branch,
-                "title": f"Hardening Suggestions for {source_title}",
+                "title": f"Pixee Hardening Suggestions for {source_title}",
                 "description": description,
             }
         )
         print(f"Hardening Suggestions for {source_branch}")
         print(new_mr.web_url)
 
-        merge_request = project.mergerequests.get(merge_id)
+        if merge_id:
+            merge_request = project.mergerequests.get(merge_id)
 
-        # Add a comment to the merge request
-        merge_request.notes.create(
-            {
-                "body": f"Pixee has created some suggestions in: [Hardening Suggestions for {source_branch}]({new_mr.web_url})"
-            }
-        )
+            # Add a comment to the merge request
+            merge_request.notes.create(
+                {
+                    "body": f"Pixee has created some suggestions in: [Hardening Suggestions for {source_branch}]({new_mr.web_url})"
+                }
+            )
     else:
         print("No changes made.")
 
