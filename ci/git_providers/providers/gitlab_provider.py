@@ -1,6 +1,9 @@
-from git_provider import GitProvider
-import gitlab
+"""
+This module provides classes and interfaces for interacting with Gitlab.
+"""
 import base64
+from git_provider import GitProvider, PullRequestData, BranchData
+import gitlab
 
 
 class GitLabProvider(GitProvider):
@@ -9,8 +12,15 @@ class GitLabProvider(GitProvider):
         self.project = self.client.projects.get(project_id, lazy=True)
 
     def create_branch(self, branch_name, source_branch):
-        return self.project.branches.create(
+        gitlab_branch_data = self.project.branches.create(
             {"branch": branch_name, "ref": source_branch}
+        )
+
+        return BranchData(
+            name=gitlab_branch_data.name,
+            last_commit_id=gitlab_branch_data.commit["id"],
+            last_commit_author=gitlab_branch_data.commit["author_name"],
+            web_url=gitlab_branch_data.web_url,
         )
 
     def create_commit(self, file_path, branch, content, commit_message):
@@ -20,7 +30,13 @@ class GitLabProvider(GitProvider):
 
     def get_pr(self, pr_id):
         # TODO normalize the return value between providers
-        return self.project.mergerequests.get(pr_id)
+        pr_data = self.project.mergerequests.get(pr_id)
+        return PullRequestData(
+            id=pr_data["iid"],
+            title=pr_data["title"],
+            creator=pr_data["author"]["username"],
+            web_url=pr_data.web_url,
+        )
 
     def get_file(self, file_path, branch_name):
         file = self.project.files.get(file_path, ref=branch_name)
@@ -28,13 +44,19 @@ class GitLabProvider(GitProvider):
         return content
 
     def create_pr(self, source_branch, target_branch, title, description):
-        return self.project.mergerequests.create(
+        pr_data = self.project.mergerequests.create(
             {
                 "source_branch": source_branch,
                 "target_branch": target_branch,
                 "title": title,
                 "description": description,
             }
+        )
+        return PullRequestData(
+            id=pr_data.iid,
+            title=pr_data.title,
+            creator=pr_data.author["username"],
+            web_url=pr_data.web_url,
         )
 
     def create_pr_comment(self, pr_id, comment):
