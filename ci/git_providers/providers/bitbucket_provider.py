@@ -2,7 +2,7 @@
 This module provides classes and interfaces for interacting with Bitbucket.
 """
 from git_provider import GitProvider, PullRequestData, BranchData
-from git_providers.lib.bb_client import BitbucketClient
+from lib.bb_client import BitbucketClient
 
 
 class BitbucketProvider(GitProvider):
