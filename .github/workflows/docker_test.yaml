@@ -24,6 +24,6 @@ jobs:
         uses: docker/build-push-action@v2
         with:
           context: .
-          file: ./Dockerfile
+          file: ./docker/Dockerfile
           push: true
           tags: pixeematt/pixee-cli:latest, pixeematt/pixee-cli:${{ steps.get_tag.outputs.tag }}
