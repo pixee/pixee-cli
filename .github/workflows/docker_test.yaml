@@ -10,10 +10,14 @@ jobs:
       - name: Check out the repo
         uses: actions/checkout@v2
 
-      - name: Extract tag name
+      - name: Set env
         id: get_tag
-        run: echo "##[set-output name=tag;]$(echo ${GITHUB_REF#refs/tags/})"      
-      
+        run: echo "RELEASE_VERSION=${GITHUB_REF#refs/*/}" >> $GITHUB_ENV
+      - name: Test
+        run: |
+          echo $RELEASE_VERSION
+          echo ${{ env.RELEASE_VERSION }}
+          
       - name: Login to Docker Hub
         uses: docker/login-action@343f7c4344506bcbf9b4de18042ae17996df046d # v3.0.0
         with:
