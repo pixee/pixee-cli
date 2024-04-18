@@ -33,7 +33,7 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v5
         with:
-          context: .
-          file: ./docker/Dockerfile
+          context: "{{defaultContext}}:docker"
+          file: ./Dockerfile
           push: true
           tags: pixeematt/pixee-cli:latest, pixeematt/pixee-cli:${{ steps.bump-semver.outputs.new_version }}
