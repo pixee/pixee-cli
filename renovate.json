@@ -1,6 +1,18 @@
+
 {
   "$schema": "https://docs.renovatebot.com/renovate-schema.json",
   "extends": [
     "config:recommended"
+  ]
+  "regexManagers": [
+    {
+      "fileMatch": ["^ci/Dockerfile$"],
+      "matchStrings": [
+        "RUN wget https://github.com/pixee/codemodder-java/releases/download/v(?<currentValue>\\d+\\.\\d+\\.\\d+)/codemodder-java-codemods-(?<currentValue>\\d+\\.\\d+\\.\\d+)\\.zip"
+      ],
+      "datasource": "github-releases",
+      "dependencyNameTemplate": "pixee/codemodder-java",
+      "versioning": "semver"
+    }
   ]
 }
