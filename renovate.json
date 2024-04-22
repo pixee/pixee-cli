@@ -6,7 +6,7 @@
   ]
   "regexManagers": [
     {
-      "fileMatch": ["^ci/Dockerfile$"],
+      "fileMatch": ["^docker/Dockerfile$"],
       "matchStrings": [
         "RUN wget https://github.com/pixee/codemodder-java/releases/download/v(?<currentValue>\\d+\\.\\d+\\.\\d+)/codemodder-java-codemods-(?<currentValue>\\d+\\.\\d+\\.\\d+)\\.zip"
       ],
