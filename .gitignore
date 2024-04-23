@@ -8,3 +8,5 @@ src/pixee/_version.py
 
 dist/
 build/
+
+.env
