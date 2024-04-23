@@ -1,0 +1,51 @@
+name: Manual Docker Build and Publish
+
+on:
+  workflow_dispatch:  # This enables manual trigger from GitHub UI or API
+
+jobs:
+  build_and_publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check out the repo
+        uses: actions/checkout@v4
+      - uses: actions-ecosystem/action-get-latest-tag@v1
+        id: get-latest-tag
+      - uses: actions-ecosystem/action-bump-semver@v1
+        id: bump-semver
+        with:
+          current_version: ${{ steps.get-latest-tag.outputs.tag }}
+          level: patch
+      - uses: actions-ecosystem/action-push-tag@v1
+        with:
+          tag: ${{ steps.bump-semver.outputs.new_version }}
+          message: '${{ steps.bump-semver.outputs.new_version }}: PR #${{ github.event.pull_request.number }} ${{ github.event.pull_request.title }}'
+      - name: Set Up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Check out code
+        uses: actions/checkout@v4
+      - name: Install build dependencies
+        run: pip install build twine
+      - name: Build package
+        run: python -m build .
+      - name: Twine Check
+        run: twine check dist/*
+      - name: Publish to PyPI
+        env:
+          TWINE_USERNAME: ${{ secrets.PYPI_USERNAME }}
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+        run: twine upload dist/*
+      - name: Login to Docker Hub
+        uses: docker/login-action@e92390c5fb421da1463c202d546fed0ec5c39f20 # v3.1.0
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v5
+        with:
+          context: "{{defaultContext}}:docker"
+          file: ./Dockerfile
+          push: true
+          tags: pixeematt/pixee-cli:latest, pixeematt/pixee-cli:${{ steps.bump-semver.outputs.new_version }}
