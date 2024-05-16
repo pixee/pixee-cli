@@ -1,21 +1,17 @@
 FROM python:3.11-rc-bullseye
 WORKDIR /pixee
 
-RUN apt-get update
+ENV CODEMODDER_JAVA_VERSION=0.72.2
 
-# Install Python 3, pip and wget
-RUN apt-get install -y wget unzip openjdk-17-jre
-
-RUN ln -s /usr/bin/python3 /usr/bin/python && \
-    java -version && \
-    python --version && \
-    python3 -m pip install semgrep==1.15.0 && \
-    python3 -m pip install codemodder
-
-RUN wget https://github.com/pixee/codemodder-java/releases/download/v0.72.2/codemodder-java-codemods-0.72.2.zip
-RUN unzip codemodder-java-codemods-0.72.2.zip
+RUN apt-get update && apt-get install -y wget unzip openjdk-17-jre
+RUN wget "https://github.com/pixee/codemodder-java/releases/download/v${CODEMODDER_JAVA_VERSION}/codemodder-java-codemods-${CODEMODDER_JAVA_VERSION}.zip"
+RUN unzip codemodder-java-codemods-*.zip && rm codemodder-java-codemods-*.zip
 
 RUN python3 -m pip install pixee
 
 COPY bin ./bin
 ENV PATH="${PATH}:/pixee/bin"
+
+WORKDIR /src
+
+ENTRYPOINT ["pixee"]
