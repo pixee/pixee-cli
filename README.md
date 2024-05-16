@@ -40,6 +40,15 @@ To simply scan some code and see possible changes to make:
 pixee fix /my/project/directory/
 ```
 
+## Docker Usage
+
+Pixee can also be run in a Docker container. This is useful if you want to run Pixee on an oerating system that does not support brew, or a CI/CD pipeline or in a containerized environment. 
+
+```
+docker run --rm -it -v "${PWD}:/src" codemodder/pixee-cli fix /src
+
+```
+
 ## F.A.Q.
 
 ### What languages are supported for fixes?
