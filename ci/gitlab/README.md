@@ -24,7 +24,7 @@
 
 <img src="../assets/gitlab/settings_cicd.png" width=200/>
 
-2. Expand `Variables` -> `add variable` and create a new one with the key `API_TOKEN` and the value from the step above.
+2. Expand `Variables` -> `add variable` and create a new one with the key `GITLAB_API_TOKEN_PIXEE` and the value from the step above.
 
 <img src="../assets/gitlab/add_var.png" width=300/>
 
@@ -34,7 +34,7 @@
 pixee:
   image: codemodder/pixee-ci-gitlab:0.0.2
   script: 
-    - echo ONMERGE2
+    - echo ONMERGE
     - echo $CI_MERGE_REQUEST_IID
     - echo $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
     - echo $CI_DEFAULT_BRANCH
