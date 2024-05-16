@@ -1,3 +1,3 @@
 #!/bin/bash
 
-exec "/pixee/core-codemods-0.69.2/bin/core-codemods"  "$@"
+exec "/pixee/core-codemods-0.72.2/bin/core-codemods"  "$@"
