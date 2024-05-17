@@ -1,4 +1,4 @@
-FROM codemodder/pixee-cli:0.0.1
+FROM codemodder/pixee-cli:0.8.5
 COPY . /pixee/bitbucket
 WORKDIR /pixee/bitbucket
 RUN pip install whatthepatch load_dotenv
