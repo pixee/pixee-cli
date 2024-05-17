@@ -1,4 +1,4 @@
-FROM python:3.11-rc-bullseye
+FROM python:3.13-rc-bullseye
 WORKDIR /pixee
 
 RUN apt-get update
