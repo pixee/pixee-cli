@@ -32,19 +32,18 @@
 
 ``` YAML
 pixee:
-  image: codemodder/pixee-ci-gitlab:0.0.2
+  image: codemodder/pixee-ci-gitlab:0.0.4
   script: 
-    - echo ONMERGE
-    - echo $CI_MERGE_REQUEST_IID
-    - echo $CI_MERGE_REQUEST_TARGET_BRANCH_NAME
-    - echo $CI_DEFAULT_BRANCH
-    - FILES=$(git --no-pager diff --name-only $CI_MERGE_REQUEST_DIFF_BASE_SHA...HEAD)
-    - echo $FILES
-    - 'FILESTR=$(echo "$FILES" | sed "s/^/**/" | tr "\n" ",")'
-    - echo $FILESTR
-    - pixee fix --apply-fixes --path-include $FILESTR $CI_PROJECT_DIR
-    - pip install -r /pixee/gitlab/requirements.txt
-    - python /pixee/gitlab/pipeline.py ./results.codetf.json
+    - /pixee/gitlab/ci.sh
+
+  artifacts:
+    paths:
+      - results.codetf.json
+  rules:
+    # pipeline should run on merge request to release branch
+    - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
+      when: always
+    - when: never
 
   artifacts:
     paths:
