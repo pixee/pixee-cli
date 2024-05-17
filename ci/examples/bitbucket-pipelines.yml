@@ -1,5 +1,6 @@
 image: atlassian/default-image:4
 
+
 pipelines:
   pull-requests:
     '**': # This will run for pull requests targeting any branch

@@ -2,6 +2,9 @@ name: Manual Docker Build and Publish
 
 on:
   workflow_dispatch:  # This enables manual trigger from GitHub UI or API
+  push:
+    branches:
+      - main
 
 jobs:
   build_and_publish:
@@ -48,4 +51,4 @@ jobs:
           context: "{{defaultContext}}:docker"
           file: ./Dockerfile
           push: true
-          tags: pixeematt/pixee-cli:latest, pixeematt/pixee-cli:${{ steps.bump-semver.outputs.new_version }}
+          tags: codemodder/pixee-cli:latest, codemodder/pixee-cli:${{ steps.bump-semver.outputs.new_version }}
