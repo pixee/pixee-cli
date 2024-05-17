@@ -8,7 +8,9 @@ import secrets
 
 
 # GitLab settings
-gitlab_url = os.environ.get("GITLAB_API_URL") or "https://gitlab.com"
+
+gitlab_url = os.environ.get("GITLAB_API_URL", "https://gitlab.com")
+
 api_token = os.environ.get("GITLAB_API_TOKEN_PIXEE")
 project_id = os.environ.get("CI_MERGE_REQUEST_PROJECT_ID") or os.environ.get(
     "CI_PROJECT_ID"

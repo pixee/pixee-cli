@@ -1,4 +1,5 @@
-image: atlassian/default-image:3
+image: atlassian/default-image:4
+
 
 pipelines:
   pull-requests:
