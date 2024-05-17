@@ -44,13 +44,4 @@ pixee:
     - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
       when: always
     - when: never
-
-  artifacts:
-    paths:
-      - results.codetf.json
-  rules:
-    # pipeline should run on merge request to release branch
-    - if: $CI_PIPELINE_SOURCE == 'merge_request_event' && $CI_MERGE_REQUEST_TARGET_BRANCH_NAME == $CI_DEFAULT_BRANCH
-      when: always
-    - when: never
 ```

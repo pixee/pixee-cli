@@ -1,5 +1,5 @@
 pixee:
-  image: codemodder/pixee-ci-gitlab:0.0.3
+  image: codemodder/pixee-ci-gitlab:0.0.4
   script:
     - /pixee/gitlab/ci.sh
 
