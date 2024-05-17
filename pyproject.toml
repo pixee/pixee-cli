@@ -11,7 +11,7 @@ readme = "README.md"
 license = {file = "LICENSE"}
 description = "Pixee CLI"
 dependencies = [
-    "codemodder==0.91.0",
+    "codemodder==0.100.0",
     "click",
     "prompt-toolkit",
     "questionary~=2.0.0",
