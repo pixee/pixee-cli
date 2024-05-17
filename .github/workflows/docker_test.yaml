@@ -2,6 +2,9 @@ name: Manual Docker Build and Publish
 
 on:
   workflow_dispatch:  # This enables manual trigger from GitHub UI or API
+  push:
+    branches:
+      - main
 
 jobs:
   build_and_publish:
