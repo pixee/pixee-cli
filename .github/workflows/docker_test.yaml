@@ -48,4 +48,4 @@ jobs:
           context: "{{defaultContext}}:docker"
           file: ./Dockerfile
           push: true
-          tags: pixeematt/pixee-cli:latest, pixeematt/pixee-cli:${{ steps.bump-semver.outputs.new_version }}
+          tags: codemodder/pixee-cli:latest, codemodder/pixee-cli:${{ steps.bump-semver.outputs.new_version }}
