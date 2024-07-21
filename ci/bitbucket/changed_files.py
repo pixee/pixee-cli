@@ -1,5 +1,5 @@
 import os
-import requests
+from security import safe_requests
 
 BITBUCKET_ACCESS_TOKEN = os.environ.get("BITBUCKET_ACCESS_TOKEN_PIXEE")
 BITBUCKET_REPO_SLUG = os.environ.get("BITBUCKET_REPO_SLUG")
@@ -16,13 +16,12 @@ headers = {
 }
 
 # Make the first API call to get the diffstat URL
-response = requests.get(url, headers=headers, timeout=10)
+response = safe_requests.get(url, headers=headers, timeout=10)
 data = response.json()
 diffstat_url = data["links"]["diffstat"]["href"]
 
 # Make the second API call using the diffstat URL
-diffstat_response = requests.get(
-    f"{diffstat_url}&fields=values.new.path", headers=headers, timeout=10
+diffstat_response = safe_requests.get(f"{diffstat_url}&fields=values.new.path", headers=headers, timeout=10
 )
 diffstat_data = diffstat_response.json()
 
