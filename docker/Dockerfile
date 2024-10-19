@@ -1,4 +1,4 @@
-FROM python:3.11-rc-bullseye
+FROM python:3.14-rc-bullseye
 WORKDIR /pixee
 
 ENV CODEMODDER_JAVA_VERSION=0.75.1
