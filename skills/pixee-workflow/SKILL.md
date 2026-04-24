@@ -2,7 +2,7 @@
 name: pixee-workflow
 description: "List, create, update, and delete Pixee workflows on a repository."
 metadata:
-  version: 1.1.0
+  version: 1.2.0
   openclaw:
     category: "developer-tools"
     requires:
@@ -82,8 +82,10 @@ has to guess:
 
 Every flag is **optional**. Omitted flags are left out of the request body and the server
 preserves the existing value (true partial update — no merge-vs-replace guesswork). Clearing a
-field (three-state null in the API) is also out of scope for the CLI; use `pixee api` if you
-need to set a field back to `null`.
+field back to `null` is supported for create-patch action sub-filters via repeatable
+`--unset <field>` (see [Clearing fields](#clearing-fields) below). Event-level fields
+(`branch`, `target-branch`, `source-branch`) are not currently clearable through the CLI —
+fall back to `pixee api -X PUT /api/v1/workflows/{id}` if you need to null one out.
 
 Event-kind-specific flags mirror `create`:
 
@@ -108,6 +110,21 @@ Every `update` subcommand accepts:
   `--min/max-severity-score` remain mutually exclusive.
 
 Unlike `create`, there is no `--tool` flag on `update`: the tool is immutable after creation.
+
+### Clearing fields
+
+`--unset <field>` clears a create-patch action sub-filter back to `null`. The flag is
+**repeatable** — pass it once per field:
+
+```bash
+pixee workflow update new-scan <id> --action create-patch --unset severity-labels
+pixee workflow update new-scan <id> --action create-patch --unset min-fix-confidence --unset finding-limit
+```
+
+Valid fields: `severity-labels`, `min-severity-score`, `max-severity-score`,
+`min-fix-confidence`, `finding-limit`. All require `--action create-patch`. Passing both a
+setter and its `--unset` for the same field (e.g. `--severity-labels critical --unset
+severity-labels`) is rejected at parse time.
 
 ## pixee workflow delete
 
@@ -147,6 +164,10 @@ pixee workflow update new-scan a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d --branch 're
 
 # Disable a workflow without changing anything else
 pixee workflow update new-scan a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d --disabled
+
+# Clear the severity-labels filter back to null (apply to all severities)
+pixee workflow update new-scan a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d \
+  --action create-patch --unset severity-labels
 
 # Delete a workflow by UUID
 pixee workflow delete a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d
