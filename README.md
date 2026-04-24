@@ -20,7 +20,7 @@ Claude Code and OpenAI Codex can drive it natively.
 ### Homebrew (macOS and Linux)
 
 ```bash
-brew install pixee/tap/pixee-cli
+brew install pixee/tap/pixee
 ```
 
 ### Direct download
