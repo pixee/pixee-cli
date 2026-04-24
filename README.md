@@ -1,68 +1,42 @@
-<picture>
-  <source media="(prefers-color-scheme: dark)" srcset="img/dark_mode_logo.png">
-  <source media="(prefers-color-scheme: light)" srcset="img/light_mode_logo.png">
-  <img alt="Pixee Logo" src="https://github.com/pixee/pixee-cli/raw/main/img/light_mode_logo.png">
-</picture>
+# Pixee CLI
 
-# Pixee is your automated product security engineer
+`pixee` is the official command-line interface for the [Pixee](https://pixee.ai) platform. It provides
+authenticated access to the Pixee REST API through both dedicated subcommands and a generic `pixee api`
+passthrough, and ships with coding agent skills so tools like Claude Code and OpenAI Codex can drive it
+natively.
 
-*Pixee fixes vulnerabilities, hardens code, squashes bugs, and gives
-engineers more time to focus on the work that counts.*
+## Install
 
-The Pixee CLI brings the power of Pixee's [Codemodder framework](https://codemodder.io) to your local development environment. This provides a way for developers to try out Pixee before installing the GitHub app.
+### Homebrew (macOS and Linux)
 
-![Pixee CLI Demo](https://github.com/pixee/pixee-cli/raw/main/img/demo.gif)
-Learn more at https://pixee.ai! 
-
-Get the most out of Pixee by installing the Pixeebot GitHub app at
-https://app.pixee.ai. Or find us on [GitHub Marketplace](https://github.com/apps/pixeebot). 
-
-## Supported Systems:
-* MacOS (using [homebrew](https://brew.sh))
-* Linux (coming soon!)
-
-## Installation
-
-### MacOS (using homebrew)
-
-```
-brew tap pixee/pixee
-brew install pixee
+```bash
+brew install pixee/tap/pixee-cli
 ```
 
-## Usage
+### Direct download
 
-After installation, you can run the `pixee` command to see instructions and options. 
+Pre-compiled binaries for `linux-x64`, `darwin-arm64`, `darwin-x64`, and `windows-x64` are published as
+assets on each [GitHub Release](https://github.com/pixee/pixee-cli/releases/latest). Download the archive
+for your platform, extract the `pixee` binary, and place it on your `PATH`.
 
-To simply scan some code and see possible changes to make:
+## Getting started
 
+```bash
+# Authenticate against a Pixee deployment
+pixee auth login --server https://pixee.example.com --token <your-token>
+
+# Send an authenticated request to any Pixee REST API endpoint
+pixee api /api/v1/repositories --paginate
+
+# List workflows configured for a repository
+pixee workflow list --repo my-repo
 ```
-pixee fix /my/project/directory/
-```
 
-## Docker Usage
+Run `pixee --help` to see every subcommand.
 
-Pixee can also be run in a Docker container. This is useful if you want to run Pixee on an oerating system that does not support brew, or a CI/CD pipeline or in a containerized environment. 
+## Coding agent skills
 
-```
-docker run --rm -it -v "${PWD}:/src" codemodder/pixee-cli fix /src
-
-```
-
-## F.A.Q.
-
-### What languages are supported for fixes?
-Currently we support codemods for Java and Python. Stay tuned for additional language support at https://pixee.ai!
-
-### What happens to my code?
-The Pixee CLI currently runs most detection and fixes locally to your own host machine. Any features that require network access to a third-party service (e.g. OpenAI) will require explicit opt-in. We promise to be transparent when this is the case. **Your code will not leave your host machine unless you explicitly opt-in to a feature that requires network access.**
-
-### How can I install the GitHub application?
-Get the most out of Pixee by installing the Pixeebot GitHub app at https://app.pixee.ai. Or find us on [GitHub Marketplace](https://github.com/apps/pixeebot).
-
-### Where can I request features and report issues?
-For CLI feature requests and bug reports please use our GitHub issue tracker: https://github.com/pixee/pixee-cli/issues
-
-
-## Contributing
-See [CONTRIBUTING.md](CONTRIBUTING.md).
+_Coming soon._ The Pixee CLI ships with [skills.sh](https://skills.sh)-formatted skills that teach
+coding agents (Claude Code, OpenAI Codex, and others) how to drive the CLI. Skills for `pixee api`,
+`pixee auth`, `pixee repo`, and `pixee workflow` will live under the `skills/` directory of this
+repository and be installable via `npx skills add`.
