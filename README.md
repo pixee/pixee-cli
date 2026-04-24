@@ -53,10 +53,11 @@ The Pixee CLI ships with [skills.sh](https://skills.sh)-formatted skills that te
 Install every skill at once:
 
 ```bash
-npx skills add pixee/pixee-cli
+npx skills add pixee/pixee-cli --all
 ```
 
-Or add individual skills with `npx skills add pixee/pixee-cli --skill <name>`:
+Omitting `--all` opens an interactive picker so you can choose which skills to install. Or add
+individual skills directly with `npx skills add pixee/pixee-cli --skill <name>`:
 
 - [`pixee-shared`](./skills/pixee-shared/SKILL.md) — global flags, exit codes, error handling.
   Prerequisite for the others.
