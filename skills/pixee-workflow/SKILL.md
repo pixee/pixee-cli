@@ -1,8 +1,8 @@
 ---
 name: pixee-workflow
-description: "List, create, and delete Pixee workflows on a repository."
+description: "List, create, update, and delete Pixee workflows on a repository."
 metadata:
-  version: 1.0.0
+  version: 1.1.0
   openclaw:
     category: "developer-tools"
     requires:
@@ -17,7 +17,8 @@ metadata:
 > handling, `../pixee-auth/SKILL.md` if authentication needs to be configured, and
 > `../pixee-repo/SKILL.md` for the `--repo` resolution protocol.
 
-`pixee workflow` manages Pixee workflows for a single repository: list, create, and delete.
+`pixee workflow` manages Pixee workflows for a single repository: list, create, update, and
+delete.
 
 ## pixee workflow list
 
@@ -67,6 +68,47 @@ Every `create` subcommand accepts:
 label-based or score-based filtering. The CLI rejects mixed usage at parse time (exit code 1)
 before any network call.
 
+## pixee workflow update
+
+`pixee workflow update` applies a **partial update** to an existing workflow. Event kind is
+selected via a subcommand — it must match the existing workflow's event kind, so the CLI never
+has to guess:
+
+- `pixee workflow update new-scan <workflow-id>` — update a new-scan workflow.
+- `pixee workflow update pull-request-scan <workflow-id>` — update a pull-request-scan workflow.
+- `pixee workflow update schedule <workflow-id>` — **always rejected**. Schedule workflow updates
+  are not exposed via the CLI; fall back to `pixee api -X PUT /api/v1/workflows/{id}` with a
+  hand-crafted body when you need them.
+
+Every flag is **optional**. Omitted flags are left out of the request body and the server
+preserves the existing value (true partial update — no merge-vs-replace guesswork). Clearing a
+field (three-state null in the API) is also out of scope for the CLI; use `pixee api` if you
+need to set a field back to `null`.
+
+Event-kind-specific flags mirror `create`:
+
+**new-scan** — `--branch <pattern>` (optional; supports a `*` suffix, e.g. `release/*`).
+
+**pull-request-scan** — `--target-branch <pattern>`, `--source-branch <pattern>` (each optional).
+
+### Shared update flags
+
+Every `update` subcommand accepts:
+
+- `--enabled` / `--disabled` — mutually exclusive; pass either to toggle the workflow's enabled
+  state, or neither to leave it unchanged.
+- `--name <name>` — rename the workflow.
+- `--action <kind>` — `create-patch` or `none`. Note: the server requires the action type in the
+  payload to match the existing action type, so this flag is primarily useful for touching the
+  current action's nested fields — not for swapping between action kinds.
+- `--severity-labels <csv>`, `--min-severity-score <int>`, `--max-severity-score <int>`,
+  `--min-fix-confidence <high|medium|low|no-rating>`, `--finding-limit <int|none>` — optional
+  create-patch sub-filters. Each requires `--action create-patch`; mixing them with
+  `--action none` is rejected at parse time (exit code 1). `--severity-labels` and
+  `--min/max-severity-score` remain mutually exclusive.
+
+Unlike `create`, there is no `--tool` flag on `update`: the tool is immutable after creation.
+
 ## pixee workflow delete
 
 ```
@@ -99,6 +141,12 @@ pixee workflow create pull-request-scan \
   --target-branch main --source-branch 'feature/*' \
   --repo pixee/pixee-platform \
   --tool codeql --action none
+
+# Update only the branch pattern of an existing new-scan workflow
+pixee workflow update new-scan a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d --branch 'release/*'
+
+# Disable a workflow without changing anything else
+pixee workflow update new-scan a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d --disabled
 
 # Delete a workflow by UUID
 pixee workflow delete a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d
