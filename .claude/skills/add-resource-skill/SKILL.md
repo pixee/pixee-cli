@@ -1,11 +1,11 @@
 ---
 name: add-resource-skill
-description: Authors a new skills.sh-formatted skill in this pixee-cli distribution repo. Trigger on requests like "add a resource skill", "write a skill for pixee X", "author a pixee skill", or "publish a skill for the new Y subcommand". Captures pixee-specific conventions (one skill per sub-command with a shared prerequisite, frontmatter schema, picker-friendly descriptions, HAL-first doctrine, sibling cross-references) and defers to /plugin-dev:skill-development for general skill-writing craft. Also covers updates to existing skills under skills/pixee-*.
+description: Authors a new skills.sh-formatted skill for the pixee CLI under skills/pixee-<noun>/SKILL.md. Trigger on requests like "add a resource skill", "write a skill for pixee X", "author a pixee skill", or "publish a skill for the new Y subcommand". Captures pixee-specific conventions (one skill per sub-command with a shared prerequisite, frontmatter schema, picker-friendly descriptions, HAL-first doctrine, sibling cross-references) and defers to /plugin-dev:skill-development for general skill-writing craft. Also covers updates to existing skills under skills/pixee-*.
 ---
 
 # Author a Pixee CLI Resource Skill
 
-Guided authoring of a new public skill under `skills/pixee-<noun>/SKILL.md`. This repo distributes the skills that teach coding agents (Claude Code, Codex, others) to drive the `pixee` binary. Consistency across siblings is load-bearing for discoverability and the skills.sh install picker.
+Guided authoring of a new skill under `skills/pixee-<noun>/SKILL.md`. This repo distributes the skills that teach coding agents (Claude Code, Codex, others) to drive the `pixee` binary. Consistency across siblings is load-bearing for discoverability and the skills.sh install picker.
 
 For general skill-writing fundamentals (what a SKILL.md is, progressive disclosure, how triggering works), invoke `/plugin-dev:skill-development` first if available. This skill layers pixee conventions on top; it does **not** repeat them. If that plugin is not installed, a one-paragraph refresher: a SKILL.md is a Markdown file with YAML frontmatter; the `description` field is how the model decides to invoke it, so it must enumerate concrete trigger phrases; keep the body scannable with clear H2 sections; front-load the most common use case.
 
