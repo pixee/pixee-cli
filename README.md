@@ -1,9 +1,19 @@
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="img/dark_mode_logo.png">
+  <source media="(prefers-color-scheme: light)" srcset="img/light_mode_logo.png">
+  <img alt="Pixee Logo" src="https://github.com/pixee/pixee-cli/raw/main/img/light_mode_logo.png">
+</picture>
+
 # Pixee CLI
 
-`pixee` is the official command-line interface for the [Pixee](https://pixee.ai) platform. It provides
-authenticated access to the Pixee REST API through both dedicated subcommands and a generic `pixee api`
-passthrough, and ships with coding agent skills so tools like Claude Code and OpenAI Codex can drive it
-natively.
+**Meet your autonomous product security engineer.** Pixee is the agentic AppSec platform that turns
+scanner noise into validated, prioritized risk and writes fixes as your developers would — ending the
+security backlog instead of growing it. Learn more at [pixee.ai](https://pixee.ai).
+
+This repository distributes `pixee`, the official command-line interface for the Pixee platform. It
+is intended for Pixee customers and gives authenticated access to the Pixee REST API through dedicated
+subcommands and a generic `pixee api` passthrough, and ships with coding-agent skills so tools like
+Claude Code and OpenAI Codex can drive it natively.
 
 ## Install
 
