@@ -51,8 +51,8 @@ the same protocol. Three cases:
    - No exact match → exit code 3 ("no repository named X found").
    - One exact match → use it.
    - Multiple exact matches (same `name` across integrations; for example, GitHub and GitLab both
-     have `pixee-platform`) → exit with an error listing each candidate with its UUID and `type`.
-     Retry with the UUID.
+     have `pixee-platform`) → exit code 1 with an error listing each candidate with its UUID and
+     `type`. Retry with the UUID.
 
 Both `--repo pixee-platform` and `--repo pixee/pixee-platform` resolve correctly when the match is
 unambiguous.

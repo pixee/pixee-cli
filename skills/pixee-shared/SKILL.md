@@ -48,6 +48,7 @@ server-precedence rules, and `pixee auth status` — see `pixee-auth`.
 - `--output text|json` — choose the output format. Default is `text` (flat, line-oriented output
   suitable for `grep`/`awk`). Use `json` for machine-readable output and pipe to `jq` for
   filtering; `pixee` does not embed a jq implementation.
+- `--json` — shorthand for `--output json`.
 
 ## Exit codes
 

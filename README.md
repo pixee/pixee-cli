@@ -46,7 +46,24 @@ Run `pixee --help` to see every subcommand.
 
 ## Coding agent skills
 
-_Coming soon._ The Pixee CLI ships with [skills.sh](https://skills.sh)-formatted skills that teach
-coding agents (Claude Code, OpenAI Codex, and others) how to drive the CLI. Skills for `pixee api`,
-`pixee auth`, `pixee repo`, and `pixee workflow` will live under the `skills/` directory of this
-repository and be installable via `npx skills add`.
+The Pixee CLI ships with [skills.sh](https://skills.sh)-formatted skills that teach coding agents
+(Claude Code, OpenAI Codex, and others) how to drive the CLI. The skills live under
+[`skills/`](./skills/) and are licensed separately under the Apache License, Version 2.0.
+
+Install every skill at once:
+
+```bash
+npx skills add pixee/pixee-cli
+```
+
+Or add individual skills with `npx skills add pixee/pixee-cli --skill <name>`:
+
+- [`pixee-shared`](./skills/pixee-shared/SKILL.md) — global flags, exit codes, error handling.
+  Prerequisite for the others.
+- [`pixee-auth`](./skills/pixee-auth/SKILL.md) — login, status, credential precedence, and
+  fixing exit-code-2 failures.
+- [`pixee-api`](./skills/pixee-api/SKILL.md) — the `pixee api` escape hatch and HAL discovery.
+- [`pixee-repo`](./skills/pixee-repo/SKILL.md) — `pixee repo list` and the shared `--repo`
+  resolution protocol.
+- [`pixee-workflow`](./skills/pixee-workflow/SKILL.md) — workflow list/create/delete, event
+  kinds, and severity filters.
