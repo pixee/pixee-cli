@@ -1,6 +1,6 @@
 ---
 name: pixee-shared
-description: "Pixee CLI: shared patterns every subcommand follows — global flags, output formatting, exit codes, and recognizing authentication failures."
+description: "Describe the global flags, output format, exit codes, and error handling used by every Pixee CLI subcommand."
 metadata:
   version: 1.0.0
   openclaw:

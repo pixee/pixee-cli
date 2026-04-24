@@ -1,6 +1,6 @@
 ---
 name: pixee-workflow
-description: "Pixee CLI: list, create, and delete Pixee workflows on a repository. Event kind is selected via a subcommand (schedule / new-scan / pull-request-scan)."
+description: "List, create, and delete Pixee workflows on a repository."
 metadata:
   version: 1.0.0
   openclaw:

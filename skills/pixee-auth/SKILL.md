@@ -1,6 +1,6 @@
 ---
 name: pixee-auth
-description: "Pixee CLI: store and validate an API token, configure which server to target, and fix authentication failures."
+description: "Store and validate Pixee API tokens and inspect the current authentication state."
 metadata:
   version: 1.0.0
   openclaw:

@@ -1,6 +1,6 @@
 ---
 name: pixee-repo
-description: "Pixee CLI: list repositories and resolve --repo arguments to repository UUIDs."
+description: "List Pixee repositories and resolve repository names to UUIDs."
 metadata:
   version: 1.0.0
   openclaw:
