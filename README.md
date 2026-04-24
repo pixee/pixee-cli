@@ -25,7 +25,7 @@ brew install pixee/tap/pixee
 
 ### Direct download
 
-Pre-compiled binaries for `linux-x64`, `darwin-arm64`, `darwin-x64`, and `windows-x64` are published as
+Pre-compiled binaries for `linux-x64`, `darwin-arm64`, and `windows-x64` are published as
 assets on each [GitHub Release](https://github.com/pixee/pixee-cli/releases/latest). Download the archive
 for your platform, extract the `pixee` binary, and place it on your `PATH`.
 
