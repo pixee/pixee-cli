@@ -1,27 +1,27 @@
 ---
 name: add-resource-skill
-description: Authors a new skills.sh-formatted skill in this pixee-cli distribution repo. Trigger on requests like "add a resource skill", "write a skill for pixee X", "author a pixee skill", or "publish a skill for the new Y subcommand". Captures pixee-specific conventions (GWS-based model, frontmatter schema, picker-friendly descriptions, HAL-first doctrine, sibling cross-references) and defers to /plugin-dev:skill-development for general skill-writing craft. Also covers updates to existing skills under skills/pixee-*.
+description: Authors a new skills.sh-formatted skill in this pixee-cli distribution repo. Trigger on requests like "add a resource skill", "write a skill for pixee X", "author a pixee skill", or "publish a skill for the new Y subcommand". Captures pixee-specific conventions (one skill per sub-command with a shared prerequisite, frontmatter schema, picker-friendly descriptions, HAL-first doctrine, sibling cross-references) and defers to /plugin-dev:skill-development for general skill-writing craft. Also covers updates to existing skills under skills/pixee-*.
 ---
 
 # Author a Pixee CLI Resource Skill
 
 Guided authoring of a new public skill under `skills/pixee-<noun>/SKILL.md`. This repo distributes the skills that teach coding agents (Claude Code, Codex, others) to drive the `pixee` binary. Consistency across siblings is load-bearing for discoverability and the skills.sh install picker.
 
-> **Not to be confused with** `pixee-cli-private/.claude/skills/add-resource/SKILL.md`, which guides a contributor through adding the **TypeScript subcommand** for a new REST resource. `add-resource` ships code; `add-resource-skill` ships the matching agent-facing documentation. The two usually run back-to-back: add the subcommand in the private repo, then author its public skill here.
-
 For general skill-writing fundamentals (what a SKILL.md is, progressive disclosure, how triggering works), invoke `/plugin-dev:skill-development` first if available. This skill layers pixee conventions on top; it does **not** repeat them. If that plugin is not installed, a one-paragraph refresher: a SKILL.md is a Markdown file with YAML frontmatter; the `description` field is how the model decides to invoke it, so it must enumerate concrete trigger phrases; keep the body scannable with clear H2 sections; front-load the most common use case.
 
 ## Pixee context you must know
 
-- **GWS-based model.** We follow the Google Workspace CLI pattern: a private source repo (`pixee-cli-private`) plus this public distribution repo. Skills are first-class artifacts, versioned independently from the binary. Background: `../../product-os/prds/pixee-cli/`.
+- **Skills modularize around sub-commands.** One skill per top-level `pixee <subcommand>` plus a single shared prerequisite skill (`pixee-shared`) that every domain skill references. This keeps each skill scoped to what an agent needs for one command group, and lets the install picker present a small menu of composable pieces.
 - **Install channel.** Skills are fetched by agents via `npx skills add pixee/pixee-cli --all` (or the interactive picker without `--all`). A picker-breaking `description` silently drops the skill from the picker.
-- **Release cadence.** Skill iteration is decoupled from binary releases — revise a skill without waiting for the next CLI tag, and ship a subcommand now and its skill later if the surface isn't finalized.
+- **Release cadence.** Skill iteration is decoupled from `pixee` binary releases — revise a skill without waiting for the next CLI tag, and ship a subcommand now and its skill later if the surface isn't finalized.
 - **`pixee-shared` is a hard prerequisite** for every domain skill. It covers global flags, exit codes, error rendering, and token security.
 - **`pixee-api` is the canonical HAL reference.** Cross-reference it for discovery guidance. Never restate HAL. Never embed OpenAPI specs or long JSON schemas.
 
 ## Before you author
 
-1. **Confirm the CLI surface exists.** Run `pixee <subcommand> --help` on PATH. If the binary is behind the source, read the subcommand module in `../pixee-cli-private/src/commands/` directly.
+The `pixee` binary on PATH is the authoritative source for what a skill should teach. Everything in the skill you write must be something you've seen the binary actually do.
+
+1. **Study the CLI by invoking it.** Start with `pixee --help` for the top-level surface; then `pixee <subcommand> --help` and each nested `pixee <subcommand> <verb> --help`. Run realistic invocations end-to-end: try each flag, observe exit codes, run `--output text` and `--output json` against the same call to see the shape difference, and follow HAL links with `pixee api <href>` where the endpoint exposes them. Do not document flags or behaviors you haven't seen the binary produce.
 2. **Read two files in full:** `skills/pixee-shared/SKILL.md` (every domain skill references it) and the **single** sibling closest to the new domain — the skill whose H1 shape you will copy. For a command-backed list/CRUD surface, `pixee-repo` (single verb) or `pixee-workflow` (subcommand-per-variant) is almost always the right reference.
 3. **Decide the slot.** New `pixee-<noun>` skill versus extending an existing one. Prefer extension when the new surface is fewer than three subcommands and lives naturally inside an existing skill's H1 (e.g., a new `pixee api --new-flag` belongs in `pixee-api`, not a new skill).
 
