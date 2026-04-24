@@ -19,7 +19,8 @@ Conventions shared by every `pixee` subcommand. Read this before using any comma
 ## Installation
 
 ```bash
-brew install pixee/tap/pixee-cli
+brew tap pixee/pixee
+brew install pixee
 # or grab the archive for your platform from:
 #   https://github.com/pixee/pixee-cli/releases/latest
 
