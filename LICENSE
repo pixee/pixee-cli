@@ -8,3 +8,7 @@ in writing by Pixee, Inc.
 Pre-compiled binaries of the Pixee CLI are made available as GitHub
 Release assets. Use of those binaries is governed by the terms
 accompanying each release.
+
+The contents of the skills/ directory are separately licensed under
+the Apache License, Version 2.0. See skills/LICENSE for the full
+terms and skills/NOTICE for required attribution.
