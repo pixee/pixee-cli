@@ -1,6 +1,6 @@
 ---
 name: pixee-workflow
-description: "List, create, and delete Pixee workflows on a repository."
+description: "List, create, update, and delete Pixee workflows on a repository."
 metadata:
   version: 1.0.0
   openclaw:
@@ -17,7 +17,8 @@ metadata:
 > handling, `../pixee-auth/SKILL.md` if authentication needs to be configured, and
 > `../pixee-repo/SKILL.md` for the `--repo` resolution protocol.
 
-`pixee workflow` manages Pixee workflows for a single repository: list, create, and delete.
+`pixee workflow` manages Pixee workflows for a single repository: list, create, update, and
+delete.
 
 ## pixee workflow list
 
@@ -67,6 +68,49 @@ Every `create` subcommand accepts:
 label-based or score-based filtering. The CLI rejects mixed usage at parse time (exit code 1)
 before any network call.
 
+## pixee workflow update
+
+`pixee workflow update` is a **partial update**: only the flags you pass are changed; everything
+else is left as-is on the server. Like `create`, the event kind is selected via subcommand, and
+the workflow ID is a positional argument:
+
+- `pixee workflow update schedule <workflow-id>` — for cadence-based workflows.
+- `pixee workflow update new-scan <workflow-id>` — for new-scan workflows.
+- `pixee workflow update pull-request-scan <workflow-id>` — for PR-scan workflows.
+
+The subcommand must match the workflow's existing event kind; you cannot retype a `schedule`
+workflow into a `new-scan` via update. There is no `--repo` flag — the workflow UUID
+disambiguates by itself.
+
+Event-specific flags mirror `create`:
+
+- **schedule** — `--cadence`, `--branch`, `--start`.
+- **new-scan** — `--branch`.
+- **pull-request-scan** — `--target-branch`, `--source-branch`.
+
+### Shared update flags
+
+Every `update` subcommand also accepts:
+
+- `--name <name>` — rename the workflow.
+- `--enabled` / `--disabled` — toggle the workflow on or off. **Mutually exclusive**; pass at
+  most one.
+- `--action <kind>`, `--severity-labels`, `--min-severity-score`, `--max-severity-score`,
+  `--min-fix-confidence`, `--finding-limit` — same semantics and same `--action create-patch`
+  requirement as on `create`. The `--severity-labels` vs `--min/max-severity-score` mutual
+  exclusion still applies.
+- `--unset <field>` — repeatable. **Clears** a nullable field back to `null` instead of setting
+  it; use this to drop a filter rather than change it. Per-subcommand fields:
+  - schedule: `start`, `severity-labels`, `min-severity-score`, `max-severity-score`,
+    `min-fix-confidence`, `finding-limit`.
+  - new-scan: `severity-labels`, `min-severity-score`, `max-severity-score`,
+    `min-fix-confidence`, `finding-limit`.
+  - pull-request-scan: `target-branch`, `source-branch`, `severity-labels`,
+    `min-severity-score`, `max-severity-score`, `min-fix-confidence`, `finding-limit`.
+
+  Action-scoped fields (`severity-labels`, `min/max-severity-score`, `min-fix-confidence`,
+  `finding-limit`) require `--action create-patch` on the same call, even when only unsetting.
+
 ## pixee workflow delete
 
 ```
@@ -100,6 +144,21 @@ pixee workflow create pull-request-scan \
   --repo pixee/pixee-platform \
   --tool codeql --action none
 
+# Disable a workflow without changing anything else
+pixee workflow update schedule a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d --disabled
+
+# Re-enable and rename a new-scan workflow
+pixee workflow update new-scan a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d \
+  --enabled --name release-scans
+
+# Tighten the severity floor on an existing pull-request-scan workflow
+pixee workflow update pull-request-scan a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d \
+  --action create-patch --min-severity-score 8
+
+# Drop the start time and clear the severity-labels filter on a schedule workflow
+pixee workflow update schedule a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d \
+  --unset start --action create-patch --unset severity-labels
+
 # Delete a workflow by UUID
 pixee workflow delete a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d
 ```
@@ -112,3 +171,11 @@ pixee workflow delete a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d
   default text output drops fields that are not in the four-column set.
 - Keep severity filters to one mode (labels *or* scores); the CLI rejects mixed usage before the
   network call, but the failure still spends a CI cycle.
+- `update` is partial — pass only the flags that need to change. Re-sending unchanged values
+  works but adds noise to scripts and audit logs.
+- To clear a nullable filter on `update`, use `--unset <field>` rather than passing an empty
+  value to the regular flag (which is a parse error). Action-scoped fields still require
+  `--action create-patch` on the same call when unsetting.
+- `--enabled` and `--disabled` are mutually exclusive on `update`; pass at most one per call.
+- The `update` subcommand must match the workflow's existing event kind. To change event kind,
+  delete and recreate.
