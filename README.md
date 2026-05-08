@@ -67,5 +67,7 @@ individual skills directly with `npx skills add pixee/pixee-cli --skill <name>`:
 - [`pixee-api`](./skills/pixee-api/SKILL.md) — the `pixee api` escape hatch and HAL discovery.
 - [`pixee-repo`](./skills/pixee-repo/SKILL.md) — `pixee repo list` and the shared `--repo`
   resolution protocol.
+- [`pixee-scan`](./skills/pixee-scan/SKILL.md) — `pixee scan list` and `pixee scan get`, with
+  filters for repository, branch, detector tool, and analysis state.
 - [`pixee-workflow`](./skills/pixee-workflow/SKILL.md) — workflow list/create/update/delete,
   event kinds, severity filters, and partial-update semantics.
