@@ -82,10 +82,10 @@ the same flag.
 - `--sca-status <s>` — one of `completed`, `failed`, `blocked`, `excluded`, `not-analyzed`.
 - `--sca-classification <s>` — one of `exploitable`, `not-exploitable`, `inconclusive`.
 - `--patch-status <s>` — one of `issued`, `merged`.
-- `--severity-update <s>` — one of `increased`, `decreased`, `no_update`. Filters by the relation
-  between the scanner's severity and Pixee's representative severity.
-- `--analyzed` / `--no-analyzed` — restrict to findings whose analysis pipeline is fully complete,
-  or the inverse. Mutually exclusive.
+- `--severity-update <s>` — one of `increased`, `decreased`, `no_update`. Filters by the
+  severity-update relation.
+- `--analyzed` — only fully-analyzed findings (every analysis type has reached a terminal state).
+- `--no-analyzed` — only not-fully-analyzed findings.
 - `--view validated` — composite view filter. Currently only `validated` is defined.
 - `--query <text>` — case-insensitive search across finding id, title, rule, and file path.
 - `--sort <field>` — `pixee-intelligence` (default), `severity`, or `pixee-severity`.
@@ -141,9 +141,6 @@ pixee finding view AZ4JOwsipJDH8099SpHt --scan "$scan_id" --json \
 
 ## Best practices
 
-- Derive `--scan` from the working environment first. The host agent already has the user's repo,
-  branch, and PR context — pin the scan with `pixee scan list` filtered by `--repo` and `--branch`
-  before prompting the user for a UUID.
 - Use `--stats` whenever the question is purely aggregate. It drops `_embedded.items`, which can
   be the bulk of the payload on large scans, and answers in one HTTP call.
 - The list response inlines `representative-results.latest-patch` on each item. Do not loop
