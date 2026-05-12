@@ -65,6 +65,8 @@ individual skills directly with `npx skills add pixee/pixee-cli --skill <name>`:
 - [`pixee-auth`](./skills/pixee-auth/SKILL.md) — login, status, credential precedence, and
   fixing exit-code-2 failures.
 - [`pixee-api`](./skills/pixee-api/SKILL.md) — the `pixee api` escape hatch and HAL discovery.
+- [`pixee-preferences`](./skills/pixee-preferences/SKILL.md) — read and write Pixee organization
+  preferences from files or stdin.
 - [`pixee-repo`](./skills/pixee-repo/SKILL.md) — `pixee repo list` and the shared `--repo`
   resolution protocol.
 - [`pixee-scan`](./skills/pixee-scan/SKILL.md) — `pixee scan list` and `pixee scan get`, with
