@@ -158,6 +158,3 @@ pixee finding view AZ4JOwsipJDH8099SpHt --scan "$scan_id" --json \
   and on each result (`analysis`, `changesets`, `patches`, `latest-patch`) are the canonical way to
   reach related resources — follow them with `pixee api <href>` rather than guessing API paths.
   See `pixee-api` for HAL conventions and `--paginate`.
-- Scan UUIDs are short-lived (scans expire roughly seven days after import per `pixee-scan`).
-  Re-resolve the scan before resuming long-running work; an expired UUID returns a not-found
-  error (exit code 3).
