@@ -67,8 +67,8 @@ individual skills directly with `npx skills add pixee/pixee-cli --skill <name>`:
 - [`pixee-api`](./skills/pixee-api/SKILL.md) — the `pixee api` escape hatch and HAL discovery.
 - [`pixee-preferences`](./skills/pixee-preferences/SKILL.md) — read and write Pixee organization
   preferences from files or stdin.
-- [`pixee-repo`](./skills/pixee-repo/SKILL.md) — `pixee repo list` and the shared `--repo`
-  resolution protocol.
+- [`pixee-repo`](./skills/pixee-repo/SKILL.md) — `pixee repo list`, `view`, `delete`, and the
+  shared `--repo` resolution protocol.
 - [`pixee-scan`](./skills/pixee-scan/SKILL.md) — `pixee scan list` and `pixee scan get`, with
   filters for repository, branch, detector tool, and analysis state.
 - [`pixee-finding`](./skills/pixee-finding/SKILL.md) — `pixee finding list` (with `--stats` and
