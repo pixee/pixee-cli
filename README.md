@@ -74,5 +74,5 @@ individual skills directly with `npx skills add pixee/pixee-cli --skill <name>`:
 - [`pixee-finding`](./skills/pixee-finding/SKILL.md) — `pixee finding list` (with `--stats` and
   filters across triage, fix, sca) and `pixee finding view`, scoped to a scan with per-finding
   analysis results inlined.
-- [`pixee-workflow`](./skills/pixee-workflow/SKILL.md) — workflow list/create/update/delete,
+- [`pixee-workflow`](./skills/pixee-workflow/SKILL.md) — workflow list/create/update/run/delete,
   event kinds, severity filters, and partial-update semantics.
