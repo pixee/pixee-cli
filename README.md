@@ -69,8 +69,9 @@ individual skills directly with `npx skills add pixee/pixee-cli --skill <name>`:
   preferences from files or stdin.
 - [`pixee-repo`](./skills/pixee-repo/SKILL.md) — `pixee repo list` and the shared `--repo`
   resolution protocol.
-- [`pixee-scan`](./skills/pixee-scan/SKILL.md) — `pixee scan list` and `pixee scan get`, with
-  filters for repository, branch, detector tool, and analysis state.
+- [`pixee-scan`](./skills/pixee-scan/SKILL.md) — `pixee scan list`, `pixee scan <id>` (view),
+  `pixee scan analyze`, and `pixee scan delete`, with filters for repository, branch, detector
+  tool, and analysis state.
 - [`pixee-finding`](./skills/pixee-finding/SKILL.md) — `pixee finding list` (with `--stats` and
   filters across triage, fix, sca) and `pixee finding view`, scoped to a scan with per-finding
   analysis results inlined.
