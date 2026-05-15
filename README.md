@@ -71,6 +71,8 @@ individual skills directly with `npx skills add pixee/pixee-cli --skill <name>`:
   resolution protocol.
 - [`pixee-scan`](./skills/pixee-scan/SKILL.md) — `pixee scan list` and `pixee scan get`, with
   filters for repository, branch, detector tool, and analysis state.
+- [`pixee-analysis`](./skills/pixee-analysis/SKILL.md) — `pixee analysis view` with `--watch`
+  polling and an adjustable interval until the analysis reaches a terminal state.
 - [`pixee-finding`](./skills/pixee-finding/SKILL.md) — `pixee finding list` (with `--stats` and
   filters across triage, fix, sca) and `pixee finding view`, scoped to a scan with per-finding
   analysis results inlined.
