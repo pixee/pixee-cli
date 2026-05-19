@@ -45,6 +45,35 @@ pixee workflow list --repo my-repo
 
 Run `pixee --help` to see every subcommand.
 
+## TLS verification
+
+The CLI verifies the server's TLS certificate against Bun's bundled Mozilla CA list — not the operating system's trust
+store. Installing a private CA in your OS keychain alone is not enough; Bun will not consult it unless you opt in (see
+the reference below). When connecting to a Pixee Enterprise Server that presents a certificate signed by an internal
+CA, you have two options:
+
+**Trust the internal CA (preferred).** Point `NODE_EXTRA_CA_CERTS` at a PEM file containing the CA chain. Verification
+still happens — only your specific CA is added to the trust set, so the bearer token is still protected from passive
+eavesdroppers and active on-path attackers.
+
+```sh
+NODE_EXTRA_CA_CERTS=/etc/ssl/internal-ca.pem pixee --server https://pixee.internal scan list
+```
+
+**Skip verification entirely (last resort).** Pass `--insecure` or set `PIXEE_INSECURE_TLS=true`. A warning is printed
+to stderr on every invocation so the choice stays visible in CI logs. Do not use this in production: a passive
+eavesdropper or active on-path attacker can intercept the request and read your bearer token.
+
+```sh
+pixee --insecure --server https://pixee.internal scan list
+PIXEE_INSECURE_TLS=true pixee --server https://pixee.internal scan list
+```
+
+See [Bun's `tls.getCACertificates` reference](https://bun.com/reference/node/tls/getCACertificates) for the full chain
+loading order (bundled Mozilla CAs → system keychain when `NODE_USE_SYSTEM_CA=1` → `NODE_EXTRA_CA_CERTS` extras) and
+[Node's `NODE_EXTRA_CA_CERTS` docs](https://nodejs.org/api/cli.html#node_extra_ca_certsfile) for the env-var contract
+Bun inherits.
+
 ## Coding agent skills
 
 The Pixee CLI ships with [skills.sh](https://skills.sh)-formatted skills that teach coding agents

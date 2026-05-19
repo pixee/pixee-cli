@@ -2,7 +2,7 @@
 name: pixee-shared
 description: "Describe the global flags, output format, exit codes, and error handling used by every Pixee CLI subcommand."
 metadata:
-  version: 1.0.0
+  version: 1.1.0
   openclaw:
     category: "developer-tools"
     requires:
@@ -50,6 +50,11 @@ server-precedence rules, and `pixee auth status` — see `pixee-auth`.
   suitable for `grep`/`awk`). Use `json` for machine-readable output and pipe to `jq` for
   filtering; `pixee` does not embed a jq implementation.
 - `--json` — shorthand for `--output json`.
+- `--insecure` — skip TLS certificate verification for the invocation (also enabled by
+  `PIXEE_INSECURE_TLS=true`). Prints a warning to stderr on every invocation. Last-resort escape
+  hatch for connecting to a Pixee Enterprise Server with a privately signed certificate; prefer
+  `NODE_EXTRA_CA_CERTS=/path/to/ca.pem` to add the internal CA to the trust set without disabling
+  verification. See the project README for the full trust-store story.
 
 ## Exit codes
 
