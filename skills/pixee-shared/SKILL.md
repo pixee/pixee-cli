@@ -1,6 +1,6 @@
 ---
 name: pixee-shared
-description: "Describe the global flags, output format, exit codes, and error handling used by every Pixee CLI subcommand."
+description: "Describe the global flags, output format, exit codes, error handling, and TLS trust troubleshooting used by every Pixee CLI subcommand."
 metadata:
   version: 1.1.0
   openclaw:
