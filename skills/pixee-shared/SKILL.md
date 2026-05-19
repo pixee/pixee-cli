@@ -1,8 +1,8 @@
 ---
 name: pixee-shared
-description: "Describe the global flags, output format, exit codes, and error handling used by every Pixee CLI subcommand."
+description: "Describe the global flags, output format, exit codes, error handling, and TLS trust troubleshooting used by every Pixee CLI subcommand."
 metadata:
-  version: 1.0.0
+  version: 1.1.0
   openclaw:
     category: "developer-tools"
     requires:
@@ -50,6 +50,10 @@ server-precedence rules, and `pixee auth status` — see `pixee-auth`.
   suitable for `grep`/`awk`). Use `json` for machine-readable output and pipe to `jq` for
   filtering; `pixee` does not embed a jq implementation.
 - `--json` — shorthand for `--output json`.
+- `--insecure` — skip TLS certificate verification for the invocation (also enabled by
+  `PIXEE_INSECURE_TLS=true`). Prints a warning to stderr. Last resort for connecting to a Pixee
+  Enterprise Server with a privately signed certificate — see **TLS trust failures** below for the
+  preferred fix.
 
 ## Exit codes
 
@@ -77,3 +81,13 @@ With `--output json`, the raw document is passed through unchanged.
 
 Authentication failures exit with code 2. Not-found responses exit with code 3. Other problem
 responses exit with code 1.
+
+## TLS trust failures
+
+`pixee` verifies certificates against its bundled Mozilla CA list, not the operating system's
+trust store. When the user reports that `pixee` cannot reach an internal or enterprise Pixee
+Server and the generic "Connection to ... failed" message looks like it might be a certificate
+problem, read [`references/tls-troubleshooting.md`](./references/tls-troubleshooting.md). It
+covers: confirming with `curl` that it's a trust failure (not DNS or a wrong URL), the preferred
+fix (`NODE_EXTRA_CA_CERTS` pointing at the internal CA PEM), and `--insecure` as a last resort
+with the security tradeoff to surface to the user.

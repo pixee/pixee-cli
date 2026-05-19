@@ -45,6 +45,45 @@ pixee workflow list --repo my-repo
 
 Run `pixee --help` to see every subcommand.
 
+## TLS configuration
+
+To point `pixee` at a Pixee Enterprise Server with a privately signed certificate, configure trust through one of the
+options below. `pixee` verifies certificates against its bundled Mozilla CA list, not the operating system's trust
+store, so installing the CA in your OS keychain alone won't make the connection succeed.
+
+### Add the internal CA to `pixee`'s trust set (recommended)
+
+Set `NODE_EXTRA_CA_CERTS` to a PEM file containing the chain. Verification still happens; only your specific CA is
+added to the trust set, so the bearer token stays protected from passive eavesdroppers and on-path attackers.
+
+```sh
+NODE_EXTRA_CA_CERTS=/etc/ssl/internal-ca.pem pixee --server https://pixee.internal scan list
+```
+
+For a persistent setup, export the variable from your shell profile or set it in your deployment environment (CI
+variable, container env, Kubernetes secret, etc.).
+
+### Disable verification (last resort)
+
+If you genuinely cannot obtain the CA chain (short-lived sandbox, one-off connectivity check, ephemeral CI container
+with no way to mount a PEM), pass `--insecure` or set `PIXEE_INSECURE_TLS=true` to skip certificate verification
+entirely. A warning prints to stderr on every invocation so the choice stays visible in CI logs.
+
+```sh
+pixee --insecure --server https://pixee.internal scan list
+PIXEE_INSECURE_TLS=true pixee --server https://pixee.internal scan list
+```
+
+Avoid this in production: with verification off, anyone who can intercept the connection can read your bearer token
+and act as you against the API. Treat any persistent CI usage as a bug to come back and fix once the CA is available.
+
+### Reference
+
+See [Bun's `tls.getCACertificates`](https://bun.com/reference/node/tls/getCACertificates) for the full chain loading
+order (bundled Mozilla CAs → system keychain when `NODE_USE_SYSTEM_CA=1` → `NODE_EXTRA_CA_CERTS` extras) and
+[Node's `NODE_EXTRA_CA_CERTS` docs](https://nodejs.org/api/cli.html#node_extra_ca_certsfile) for the env-var contract
+Bun inherits.
+
 ## Coding agent skills
 
 The Pixee CLI ships with [skills.sh](https://skills.sh)-formatted skills that teach coding agents
