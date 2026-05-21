@@ -1,6 +1,6 @@
 ---
 name: pixee-workflow
-description: "List, create, update, and delete Pixee workflows on a repository."
+description: "List, create, update, run, and delete Pixee workflows on a repository with partial-update semantics across event kinds."
 metadata:
   version: 1.0.0
   openclaw:
@@ -17,7 +17,7 @@ metadata:
 > handling, `../pixee-auth/SKILL.md` if authentication needs to be configured, and
 > `../pixee-repo/SKILL.md` for the `--repo` resolution protocol.
 
-`pixee workflow` manages Pixee workflows for a single repository: list, create, update, and
+`pixee workflow` manages Pixee workflows for a single repository: list, create, update, run, and
 delete.
 
 ## pixee workflow list
@@ -111,6 +111,23 @@ Every `update` subcommand also accepts:
   Action-scoped fields (`severity-labels`, `min/max-severity-score`, `min-fix-confidence`,
   `finding-limit`) require `--action create-patch` on the same call, even when only unsetting.
 
+## pixee workflow run
+
+```
+pixee workflow run <workflow-id>
+```
+
+Trigger a scheduled workflow on demand. `<workflow-id>` is the UUID shown in the `id` column of
+`pixee workflow list`.
+
+`run` targets `schedule` workflows specifically — `new-scan` and `pull-request-scan` workflows
+fire on their own events (incoming scan, pull-request scan) and there is nothing for the agent
+to trigger manually. Pairs naturally with `pixee workflow update schedule --enabled` for the
+"re-enable, then kick off once now" flow, and with `--disabled` to suspend the cadence after a
+single manual run.
+
+No flags. No `--repo` flag — the workflow UUID disambiguates by itself.
+
 ## pixee workflow delete
 
 ```
@@ -161,6 +178,10 @@ pixee workflow update schedule a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d \
 
 # Delete a workflow by UUID
 pixee workflow delete a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d
+
+# Re-enable a paused schedule workflow, then trigger it once on demand
+pixee workflow update schedule a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d --enabled
+pixee workflow run a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d
 ```
 
 ## Best practices
@@ -179,3 +200,6 @@ pixee workflow delete a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d
 - `--enabled` and `--disabled` are mutually exclusive on `update`; pass at most one per call.
 - The `update` subcommand must match the workflow's existing event kind. To change event kind,
   delete and recreate.
+- `pixee workflow run` only makes sense for `schedule` workflows; `new-scan` and
+  `pull-request-scan` workflows fire on their own events. Use `run` for the "re-enable, then
+  trigger once now" or "kick off the cadence ahead of schedule" patterns.
