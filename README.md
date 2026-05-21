@@ -112,6 +112,9 @@ individual skills directly with `npx skills add pixee/pixee-cli --skill <name>`:
   and `delete`, with filters for repository, branch, detector tool, and analysis state.
 - [`pixee-integration`](./skills/pixee-integration/SKILL.md) — `pixee integration list` to
   discover the integration ids consumed by `pixee scan create --integration-id`.
+- [`pixee-analysis`](./skills/pixee-analysis/SKILL.md) — `pixee analysis list` (with filters for
+  repo, branch, state, tool, and updated-at window), `pixee analysis view` with `--watch`
+  polling until terminal state, and `pixee analysis delete`.
 - [`pixee-finding`](./skills/pixee-finding/SKILL.md) — `pixee finding list` (with `--stats` and
   filters across triage, fix, sca) and `pixee finding view`, scoped to a scan with per-finding
   analysis results inlined.
