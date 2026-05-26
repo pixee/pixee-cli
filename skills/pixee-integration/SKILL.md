@@ -41,10 +41,10 @@ when the integration can push triage verdicts back to the source). JSON output i
 of integration records with the HAL envelope stripped — each record carries `id`, `type`,
 `capabilities`, and a `_links` object for HAL traversal.
 
-The default integration registered for each scanner type uses the id pattern `<type>-default`
-(e.g., `sonar-default`, `polaris-default`, `github-default`). The default integration is
-sufficient for most uploads and is what scripts that don't know which integration to pick
-should reach for.
+The default integration registered for each scanner type often uses the id pattern
+`<type>-default` (e.g., `sonar-default`, `polaris-default`, `github-default`), but that is a
+convention, not a contract. List the integrations and read the `id` rather than constructing it
+by hand.
 
 The `type` discriminator names the scanner family (e.g., `sonar`, `polaris`, `gitlab`,
 `appscan`). It is **not** identical to the `--tool` enum on `pixee scan create` — the latter
@@ -79,8 +79,8 @@ pixee api "$href"
 ## Best practices
 
 - The integration id is stable across calls; cache it per-org rather than re-listing on every
-  invocation. The default-per-type pattern (`<type>-default`) is stable enough that scripts can
-  usually hardcode it when they need to avoid a lookup hop.
+  invocation. Resolve it from `pixee integration list` rather than constructing a
+  `<type>-default` string by hand, since that pattern is a convention the platform can change.
 - Filter by `type` when looking for a specific scanner family. The org may have multiple
   integrations of the same type (different GitHub Apps, multiple GitLab tenants) and `type`
   alone is not unique.
