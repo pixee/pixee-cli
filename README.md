@@ -30,6 +30,21 @@ Pre-compiled binaries for `linux-x64`, `darwin-arm64`, and `windows-x64` are pub
 assets on each [GitHub Release](https://github.com/pixee/pixee-cli/releases/latest). Download the archive
 for your platform, extract the `pixee` binary, and place it on your `PATH`.
 
+### Verifying your download
+
+Each release publishes a `SHA256SUMS` manifest listing the checksum of every archive. Download it into the
+same directory as your archive, then confirm the archive matches its published checksum:
+
+```bash
+# Linux
+sha256sum --ignore-missing -c SHA256SUMS
+
+# macOS
+shasum -a 256 --ignore-missing -c SHA256SUMS
+```
+
+`--ignore-missing` checks only the archives you actually downloaded; a line ending in `OK` confirms a match.
+
 ## Getting started
 
 ```bash

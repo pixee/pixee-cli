@@ -27,6 +27,15 @@ brew install pixee
 pixee --version   # prints the release version baked into the binary
 ```
 
+When downloading an archive directly, verify it against the `SHA256SUMS` manifest published on the
+release before extracting the binary. Download the manifest into the same directory as the archive,
+then check it (`--ignore-missing` limits the check to the archives actually downloaded):
+
+```bash
+sha256sum --ignore-missing -c SHA256SUMS      # Linux
+shasum -a 256 --ignore-missing -c SHA256SUMS  # macOS
+```
+
 ## Credentials at a glance
 
 `pixee` reads an API token and server URL from environment variables (`PIXEE_TOKEN`,
