@@ -118,6 +118,9 @@ individual skills directly with `npx skills add pixee/pixee-cli --skill <name>`:
   Prerequisite for the others.
 - [`pixee-auth`](./skills/pixee-auth/SKILL.md) — login, status, credential precedence, and
   fixing exit-code-2 failures.
+- [`pixee-o11y`](./skills/pixee-o11y/SKILL.md) — `pixee o11y login/token/status/logout`:
+  device-flow auth to a deployment's observability stack and per-user bearer tokens for
+  querying VictoriaMetrics/Logs/Traces.
 - [`pixee-api`](./skills/pixee-api/SKILL.md) — the `pixee api` escape hatch and HAL discovery.
 - [`pixee-preferences`](./skills/pixee-preferences/SKILL.md) — read and write Pixee organization
   preferences from files or stdin.
