@@ -48,11 +48,11 @@ stored per-server, so you can be logged in to several deployments at once.
 pixee auth login
 
 # Or target a specific deployment (URL or bare host)
-pixee auth login https://pixee.example.com
-pixee auth login edge.getpixee.com
+pixee auth login --server https://pixee.example.com
+pixee auth login --server edge.getpixee.com
 
 # Headless / SSH: print the URL instead of trying to open a browser
-pixee auth login pixee.example.com --no-browser
+pixee auth login --server pixee.example.com --no-browser
 ```
 
 Because the device flow needs no redirect back to the CLI, **the browser does not have to be on
@@ -72,7 +72,9 @@ pixee auth login --server https://pixee.example.com --token
 
 Flags:
 
-- `--server <url>` — deployment to authenticate against.
+- `--server <url>` — deployment to authenticate against. Every `auth` subcommand takes it; the
+  global `--server` and `PIXEE_SERVER` work too, and after a successful login the server is
+  remembered so later commands need no flag.
 - `--token [value]` — use the shared API key instead of the device flow. Bare `--token` prompts;
   `--token -` reads stdin; `--token <value>` takes it inline (lands in shell history).
 - `--no-browser` — device flow only: print the verification URL, don't try to open a browser.
@@ -83,7 +85,7 @@ Print a currently-valid device-flow bearer token, refreshing it silently if it h
 Designed for scripts and coding agents — feed it straight into `curl`:
 
 ```bash
-TOKEN=$(pixee auth token https://pixee.example.com)
+TOKEN=$(pixee auth token --server https://pixee.example.com)
 
 # Pixee REST API
 curl -s -H "Authorization: Bearer $TOKEN" https://pixee.example.com/api/v1/users/me
@@ -130,7 +132,7 @@ server-side, and it deliberately leaves the shared API key in place, since that 
 configuration rather than a personal session.
 
 ```bash
-pixee auth logout https://pixee.example.com
+pixee auth logout --server https://pixee.example.com
 ```
 
 ## Credential resolution
@@ -138,8 +140,8 @@ pixee auth logout https://pixee.example.com
 For every subcommand except `pixee auth login`:
 
 - **Token:** `--token` flag → `PIXEE_TOKEN` env var → stored credentials.
-- **Server:** `--server` flag → `PIXEE_SERVER` env var → stored config. A `[server]` positional
-  argument on the `auth` subcommands overrides all of it.
+- **Server:** `--server` flag → `PIXEE_SERVER` env var → stored config. A subcommand-level
+  `--server` (available on every `auth` subcommand) takes precedence over the global one.
 
 Setting `PIXEE_TOKEN` + `PIXEE_SERVER` is the CI/CD and agent-automation path — no
 `pixee auth login` step required, and unaffected by anything the device flow does.
