@@ -72,9 +72,9 @@ pixee auth login --server https://pixee.example.com --token
 
 Flags:
 
-- `--server <url>` — deployment to authenticate against. Every `auth` subcommand takes it; the
-  global `--server` and `PIXEE_SERVER` work too, and after a successful login the server is
-  remembered so later commands need no flag.
+- `--server <url>` — deployment to authenticate against. The global `--server` and `PIXEE_SERVER`
+  work too, and after a successful login the server is remembered, so `status` and `logout` need no
+  flag. **`auth token` is the exception — it always requires `--server`** (see below).
 - `--token [value]` — use the shared API key instead of the device flow. Bare `--token` prompts;
   `--token -` reads stdin; `--token <value>` takes it inline (lands in shell history).
 - `--no-browser` — device flow only: print the verification URL, don't try to open a browser.
@@ -83,6 +83,13 @@ Flags:
 
 Print a currently-valid device-flow bearer token, refreshing it silently if it has expired.
 Designed for scripts and coding agents — feed it straight into `curl`:
+
+**`--server` is required here**, unlike every other command. Everywhere else the server and the
+credential are resolved together and used together, so they cannot disagree. This command returns a
+bare token and *you* choose the URL, so a defaulted server would let you pipe one deployment's
+credential into a request against another — silently, with neither half able to detect it.
+`PIXEE_SERVER` and the stored default are deliberately not honored. Run `pixee auth status` to see
+which servers you have sessions for.
 
 ```bash
 TOKEN=$(pixee auth token --server https://pixee.example.com)
@@ -112,8 +119,9 @@ configured one already hold it.
 ### pixee auth status
 
 Print the current authentication state: the configured server, whether the stored API key
-validates, and the per-user session's identity and expiry. Read-only; never refreshes. Always
-exits 0, so it is a safe "am I logged in?" probe. Add `--json` for machine-readable output.
+validates, the per-user session's identity and expiry, and **every other server you hold a session
+for**. Read-only; never refreshes. Always exits 0, so it is a safe "am I logged in?" probe. Add
+`--json` for machine-readable output.
 
 ```bash
 pixee auth status
@@ -123,7 +131,14 @@ pixee auth status
 # Session: dan.dunning@pixee.ai
 # Session token: valid (expires in 58m)
 # Refresh token: present
+#
+# Other sessions:
+#   https://edge.example.com  expired (will refresh on next use)
 ```
+
+Expired sessions are listed too — they are the ones you cannot otherwise see, and this is where you
+find out what to pass `auth token --server`. With nothing configured at all it collapses to one
+line rather than repeating "not configured" for each credential.
 
 ### pixee auth logout
 
