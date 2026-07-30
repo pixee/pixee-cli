@@ -2,7 +2,7 @@
 name: pixee-auth
 description: "Authenticate to a Pixee deployment — the per-user OAuth2 device flow or the deployment's shared API key — choose which deployment commands target, mint bearer tokens for the REST API and observability endpoints, and inspect the current authentication state."
 metadata:
-  version: 1.2.0
+  version: 1.3.0
   openclaw:
     category: "developer-tools"
     requires:
@@ -149,8 +149,12 @@ configured one already hold it.
 
 Print the current authentication state: the configured server, whether the stored API key
 validates, the per-user session's identity and expiry, and **every other server you hold a session
-for**. Read-only; never refreshes. Always exits 0, so it is a safe "am I logged in?" probe. Add
-`--json` for machine-readable output.
+for**. Read-only; never refreshes. Always exits 0, so it is a safe "am I logged in?" probe.
+
+`--json` is the machine-readable form: `configured` (whether any credential is set at all),
+`apiKey` (the rendered report lines), and `sessions[]` with `server`, `isDefault`, `identity`,
+`tokenValid`, `canRefresh`, and `expiresAt` per stored session. Prefer `sessions[]` over parsing the
+text output.
 
 ```bash
 pixee auth status
@@ -195,6 +199,9 @@ the user to run `pixee auth login` or set `PIXEE_SERVER`.
 
 ## Fixing exit code 2
 
+Both credential types exit 2 on an authentication failure, so you can branch on it uniformly — a
+missing or expired device session and an invalid API key are the same exit code.
+
 When a command exits with code 2 ("Authentication failed"):
 
 1. Run `pixee auth status` to see which server is configured and which credentials are live.
@@ -202,6 +209,12 @@ When a command exits with code 2 ("Authentication failed"):
 3. If a per-user session expired and cannot refresh, run `pixee auth login` again.
 4. If the shared API key is invalid, rotate it in the admin console and log in again — preferably
    via `--token -` stdin or the `PIXEE_TOKEN` env var.
+5. **If `auth status` looks healthy but other commands still 401**, check whether the stored API key
+   belongs to a *different* deployment than the current server. `server` and `token` in the config
+   are a pair, and a device login repoints the server without touching the key — so commands outside
+   the `auth` group can end up sending one deployment's key to another. `auth login` prints a note on
+   stderr when it creates that situation. Fix it by storing a key for this deployment
+   (`pixee auth login --server <url> --token -`) or by unsetting the old one.
 
 ## Notes
 
