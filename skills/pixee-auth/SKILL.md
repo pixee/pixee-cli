@@ -1,8 +1,8 @@
 ---
 name: pixee-auth
-description: "Authenticate to a Pixee deployment — the per-user OAuth2 device flow or the deployment's shared API key — mint bearer tokens for the REST API and observability endpoints, and inspect the current authentication state."
+description: "Authenticate to a Pixee deployment — the per-user OAuth2 device flow or the deployment's shared API key — choose which deployment commands target, mint bearer tokens for the REST API and observability endpoints, and inspect the current authentication state."
 metadata:
-  version: 1.1.0
+  version: 1.2.0
   openclaw:
     category: "developer-tools"
     requires:
@@ -79,6 +79,24 @@ Flags:
   `--token -` reads stdin; `--token <value>` takes it inline (lands in shell history).
 - `--no-browser` — device flow only: print the verification URL, don't try to open a browser.
 
+### pixee auth use
+
+Set the deployment that later commands target when no `--server` and no `PIXEE_SERVER` are given.
+
+```bash
+pixee auth use ddunning.getpixee.com
+# Now using https://ddunning.getpixee.com.
+```
+
+That default also gets set by a successful `auth login`, but only as a side effect of whichever
+login happened last. `auth use` makes it deliberate — the same idea as `kubectl config use-context`.
+Only the server changes: device-flow sessions live in their own per-server files and any shared API
+key in the config is preserved, so switching deployments never logs you out or clears a key that CI
+depends on.
+
+It does not require an existing session, so you can point at a deployment before logging in to it;
+it says so on stderr rather than failing.
+
 ### pixee auth token
 
 Print a currently-valid device-flow bearer token, refreshing it silently if it has expired.
@@ -111,6 +129,17 @@ curl -sG -H "Authorization: Bearer $TOKEN" \
 curl -s -H "Authorization: Bearer $TOKEN" \
   https://pixee.example.com/o11y/traces/select/jaeger/api/services
 ```
+
+When the server you name is not the one `auth use` currently points at, `token` says so on
+**stderr** — a note, not a warning, since wanting another environment's token is routine:
+
+```bash
+$ pixee auth token --server edge.getpixee.com
+note: token for https://edge.getpixee.com; 'pixee auth use' currently points at https://ddunning.getpixee.com
+eyJhbGciOi…
+```
+
+stdout stays exactly one token, so `$(pixee auth token --server …)` and `2>/dev/null` both behave.
 
 If no session is stored (or it expired and cannot be refreshed), `token` exits non-zero with a
 message directing you to run `pixee auth login`. It never prints the shared API key — callers that
@@ -155,8 +184,8 @@ pixee auth logout --server https://pixee.example.com
 For every subcommand except `pixee auth login`:
 
 - **Token:** `--token` flag → `PIXEE_TOKEN` env var → stored credentials.
-- **Server:** `--server` flag → `PIXEE_SERVER` env var → stored config. A subcommand-level
-  `--server` (available on every `auth` subcommand) takes precedence over the global one.
+- **Server:** `--server` flag → `PIXEE_SERVER` env var → stored config (set by `auth use`, or by a
+  successful `auth login`). A subcommand-level `--server` takes precedence over the global one.
 
 Setting `PIXEE_TOKEN` + `PIXEE_SERVER` is the CI/CD and agent-automation path — no
 `pixee auth login` step required, and unaffected by anything the device flow does.
