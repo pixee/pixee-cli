@@ -1,11 +1,11 @@
 ---
 name: audit-skills
-description: "Detects and closes drift between the latest released Pixee CLI surface and the published `skills/pixee-*` skills on `origin/main`. Trigger after a new pixee release, on a `/audit-skills` request, or when the contributor asks 'are the skills up to date?', 'is there a missing pixee skill?', 'does the CLI match the skills?', 'check skill drift', or 'do we need to update the skills for vX.Y.Z?'. Always audits against `origin/main` (the source of truth for what users see), never the local working tree. Produces a structured drift report first, then files DevRev issues in CAPL-44 and hands each one to `/dev-workflow:implement-issue`. Accepts `--headless` for unattended post-release runs."
+description: "Detects and closes drift between the latest released Pixee CLI surface and the published `skills/pixee-*` skills on `origin/main`. Trigger after a new pixee release, on a `/audit-skills` request, or when the contributor asks 'are the skills up to date?', 'is there a missing pixee skill?', 'does the CLI match the skills?', 'check skill drift', or 'do we need to update the skills for vX.Y.Z?'. Always audits against `origin/main` (the source of truth for what users see), never the local working tree. Produces a structured drift report first, then files DevRev issues in CAPL-44 and hands each one to `/dev-workflow:implement-issue`. Accepts `--headless` for unattended post-release runs, and `--implement` to close the highest-severity gap directly into a pull request without filing an issue."
 ---
 
 # Audit Pixee CLI Skills for Drift
 
-A maintenance workflow that compares the **live `pixee` binary on PATH** (the release the contributor actually shipped) against the **published `skills/pixee-*/SKILL.md` on `origin/main`** (what users actually pull via `npx skills add pixee/pixee-cli`), then closes any gaps through DevRev and `/dev-workflow:implement-issue`.
+A maintenance workflow that compares the **live `pixee` binary on PATH** (the release the contributor actually shipped) against the **published `skills/pixee-*/SKILL.md` on `origin/main`** (what users actually pull via `npx skills add pixee/pixee-cli`), then closes any gaps through DevRev and `/dev-workflow:implement-issue`, or directly in a pull request under `--implement`.
 
 The skills shipped from this repo (`pixee/pixee-cli`) teach coding agents to drive `pixee`. Whenever a new subcommand, verb, or flag lands in the CLI without a corresponding skill update, agents silently fall back to guessing — that is what this skill exists to prevent.
 
@@ -13,14 +13,16 @@ The skills shipped from this repo (`pixee/pixee-cli`) teach coding agents to dri
 
 - Right after a new `pixee` release — the canonical trigger, paired with `--headless` if you want a hands-off run.
 - Ad-hoc when a contributor suspects drift after merging a `pixee-cli-private` PR that adds a subcommand or flag.
-- As a scheduled CI job that runs the audit phase only (no remediation) and posts the report somewhere.
+- As a scheduled CI job or cloud coding agent. Pair `--headless` with `--implement` for a run that closes one gap per night, or use `--headless` alone to post a report without remediating.
 
 `pixee` must be on `PATH` and must point at the release the contributor wants to audit. If `pixee --version` does not match the latest tag on `pixee/pixee-cli`, stop and ask the contributor whether to upgrade first (skip the prompt under `--headless` — note the version mismatch in the report and proceed).
+
+**A binary that will not run ends the audit.** `pixee <cmd> --help` is the only evidence this skill accepts for what the CLI exposes. If `pixee --version` fails for any reason (not installed, wrong architecture, no network to fetch a release), stop and report that. Never reconstruct a CLI surface from this repo's own skills, from a changelog, or from memory: the whole point of the audit is to compare the skills against something independent of them, and substituting a remembered surface inverts the result into a report that confirms whatever the skills already say.
 
 ## Hard rules
 
 1. **Map skills to subcommands by `cliHelp`, not by slug.** The skill that covers `pixee organization preferences` is called `pixee-preferences`, not `pixee-organization`. Skill slugs are stable across renames; CLI subcommand names evolve, so joining by slug silently diverges as the surface moves. Read each skill's frontmatter `cliHelp` field (`cliHelp: "pixee <subcommand> --help"`) to learn what it covers; only use slug as a tiebreaker for cross-cutting skills like `pixee-shared`.
-2. **Audit first, remediate second.** Never file a DevRev issue or invoke `/dev-workflow:implement-issue` before producing the drift report and getting approval. Under `--headless` the report is the approval — file issues immediately after producing it.
+2. **Audit first, remediate second.** Never file a DevRev issue, invoke `/dev-workflow:implement-issue`, or edit a `skills/pixee-*/SKILL.md` before producing the drift report and getting approval. Under `--headless` the report is the approval — remediate immediately after producing it. Editing before the report means the report describes work already done, which is how a run talks itself into a gap that was never there.
 3. **One issue per gap.** Each missing skill, each orphaned skill, each material flag drift becomes its own DevRev issue in part `CAPL-44`.
 4. **`pixee --help` is the binary's source of truth.** Skill content is correct when it matches the help output of the binary on `PATH`.
 5. **Don't invent skills.** When a CLI surface is small and naturally belongs inside an existing skill, file an issue to **extend** the sibling, not to add a new `pixee-<noun>` skill. See `.claude/skills/add-resource-skill/SKILL.md` for the slot-decision rule.
@@ -36,9 +38,19 @@ Pass `--headless` for unattended runs (post-release CI, scheduled cron). The ski
 
 Interactive mode is the default. When in doubt, ask.
 
+## Implement mode
+
+Pass `--implement` when the agent running this skill is itself the implementer, so there is no one to hand an issue to. It replaces the DevRev handoff, and it composes with `--headless`:
+
+- **No issue is filed.** Skip steps 7 and 8 entirely. Filing an issue and immediately implementing it yourself produces a ticket that is closed before anyone reads it, and it needs a DevRev connection the implementing agent may not have.
+- **One gap per run.** Close the single highest-severity gap: category A or E first, then B, then C or D, breaking ties by the busier subcommand. Authoring several unrelated skills in one branch produces a diff no reviewer will read closely, which is how drift gets replaced by wrong content.
+- **The full report travels with the PR.** Put the complete drift report in the PR description, including the gaps this run did not close, so the next run's picker and a human reader both see what is still outstanding. A gap dropped from the report is a gap nobody files.
+- **Author through `add-resource-skill`.** Invoke it the way step 8 would have, so the conventions in `.claude/skills/add-resource-skill/SKILL.md` still govern the content.
+- **The pull request is the deliverable.** A branch pushed without one is an unfinished run. Report the PR URL, or report plainly that no PR was opened and why; never describe a run as complete without one.
+
 ## Workflow
 
-Open these as `TaskCreate` tasks at the start of the run so the assumption-verification steps in the remediate phase don't get skipped under pressure:
+Track these as an explicit checklist from the start of the run, using whatever task mechanism the harness provides, so the assumption-verification steps in the remediate phase don't get skipped under pressure:
 
 1. Resolve binary version + `origin/main` SHA
 2. Enumerate the CLI surface
@@ -46,9 +58,9 @@ Open these as `TaskCreate` tasks at the start of the run so the assumption-verif
 4. Compare and classify each gap
 5. Produce the drift report
 6. (Interactive) Stop for approval. (Headless) Skip.
-7. File DevRev issues
-8. Run `/dev-workflow:implement-issue` per issue
-9. (Headless) Notify
+7. File DevRev issues — skipped under `--implement`
+8. Run `/dev-workflow:implement-issue` per issue — under `--implement`, author the top gap yourself and open the PR
+9. (Headless) Notify — under `--implement` the PR is the notification
 
 ### Step 1. Resolve binary version and the published skill set
 
@@ -151,7 +163,7 @@ After the report, ask: *"File one DevRev issue per gap in CAPL-44 and hand each 
 
 Under `--headless`, skip this step.
 
-### Step 7. File one DevRev issue per gap
+### Step 7. File one DevRev issue per gap (skipped under `--implement`)
 
 For each gap, create a DevRev issue using `mcp__plugin_devrev_devrev__create_issue`:
 
@@ -160,7 +172,7 @@ For each gap, create a DevRev issue using `mcp__plugin_devrev_devrev__create_iss
   - `Add pixee-finding skill for pixee 0.12.0`
   - `Document --has-analysis on pixee-scan for 0.12.0`
   - `Retire pixee-<noun> skill — subcommand removed in 0.12.0`
-- **body**: Per the project's DevRev voice ([`feedback_devrev_issue_voice.md`](../../../.claude/projects/-Users-jgilday-development-github-pixee-pixee-cli-private/memory/feedback_devrev_issue_voice.md)) — write for someone who hasn't read the code. Cover, in order:
+- **body**: Written for someone who has not read the code. Describe the feature and the gap, not the implementation: no file paths, no test breakdowns, no infrastructure notes, all of which belong in the PR diff instead. Cover, in order:
   - What `pixee` command(s) lack matching skill coverage today, with a one-line `pixee <subcommand> --help` excerpt.
   - What question(s) an agent currently can't answer because of the gap.
   - Pointer to the authoring workflow: "Use `add-resource-skill` in this repo's `.claude/skills/`."
@@ -175,23 +187,26 @@ For each `ISS-XXXX`, invoke `/dev-workflow:implement-issue ISS-XXXX`. Run them *
 
 Interactive: if the contributor wants to defer ("file the issues now, I'll implement them tomorrow"), stop after Step 7 and report the issue IDs.
 
+Under `--implement`, there is no issue and no handoff. Author the single highest-severity gap yourself, following `.claude/skills/add-resource-skill/SKILL.md`, and open one pull request carrying the full drift report. Every decision you would have recorded in an issue's `Assumptions:` list goes in the PR description instead, where the reviewer can correct it.
+
 ### Step 9. Notify (`--headless` only)
 
 Notify the user with a single message containing the audited `pixee` version, the count of issues filed, the issue IDs, and any PR URLs that resulted from Step 8.
 
-Interactive mode uses the chat itself as the notification channel — skip this step.
+Interactive mode uses the chat itself as the notification channel — skip this step. Under `--implement` the pull request is the notification; skip this step there too.
 
 ## Boundaries
 
-- The skill does not modify `skills/pixee-*/SKILL.md` directly. All authoring goes through `add-resource-skill` (invoked transitively by `implement-issue`), which preserves the conventions documented there.
+- The skill does not modify `skills/pixee-*/SKILL.md` directly. All authoring goes through `add-resource-skill` (invoked transitively by `implement-issue`, or directly under `--implement`), which preserves the conventions documented there.
 - The skill does not bump `pixee-cli-private` versions, retag, or touch the release pipeline.
 - The skill does not audit *content quality* — only naming and shape parity. "The pixee-workflow skill is hard to read" is a separate concern.
-- The skill assumes `gh` is authenticated and `git fetch origin` works against `pixee/pixee-cli`. If either fails, stop and report — do not fall back to the local working tree.
-- The skill assumes `mcp__plugin_devrev_devrev__create_issue` is available. Without it, stop after Step 5 and tell the contributor to file the issues manually using the report's titles and bodies.
+- The skill assumes `git fetch origin` works against `pixee/pixee-cli`. If it fails, stop and report — do not fall back to the local working tree, which is the one comparison guaranteed to be wrong.
+- `gh` is used only to resolve the latest release tag for the version check in Step 1. Where `gh` is unavailable or unauthenticated, note that the tag could not be resolved and continue: the audit compares the binary against the skills, and the tag only tells you whether the binary itself is current.
+- Steps 7 and 8 assume a DevRev connection and the `dev-workflow` skills. Under `--implement` neither is needed. Without either, and without `--implement`, stop after Step 5 and give the contributor the report's titles and bodies to file by hand.
 
 ## Dry-run behavior
 
-If the contributor invokes the skill without an obvious "remediate" intent — for example, "what skill drift is there?" or "run an audit" — execute steps 1–5 and stop. Treat silence after the report as "report only." `--headless` overrides this — under `--headless`, always remediate.
+If the contributor invokes the skill without an obvious "remediate" intent — for example, "what skill drift is there?" or "run an audit" — execute steps 1–5 and stop. Treat silence after the report as "report only." `--headless` and `--implement` both override this: under either, always remediate.
 
 ## Why this matters
 
