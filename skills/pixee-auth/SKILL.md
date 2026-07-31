@@ -28,11 +28,13 @@ and picking the right one matters:
 | Reaches `/o11y/` endpoints | yes | no |
 | Works unattended | no — one interactive approval | yes |
 
-Prefer the device flow whenever a human is present. Use the API key for CI and unattended
-automation, where no one can approve a browser prompt.
+Prefer the device flow whenever a human is present. Ordinary commands (`repo list`, `scan list`,
+`api`, …) use the session automatically once you have logged in, so an interactive user needs no
+API key at all. Reserve the key for CI and unattended automation, where no one can approve a
+browser prompt.
 
 The two are stored separately, so adopting the device flow never disturbs an existing API-key
-setup.
+setup — an existing key stays on disk and keeps working as the fallback.
 
 ## Commands
 
@@ -152,18 +154,24 @@ validates, the per-user session's identity and expiry, and **every other server 
 for**. Read-only; never refreshes. Always exits 0, so it is a safe "am I logged in?" probe.
 
 `--json` is the machine-readable form: `configured` (whether any credential is set at all),
-`apiKey` (the rendered report lines), and `sessions[]` with `server`, `isDefault`, `identity`,
-`tokenValid`, `canRefresh`, and `expiresAt` per stored session. Prefer `sessions[]` over parsing the
-text output.
+`apiKey` (a structured object: `server`, `serverSource`, `tokenSource`, `tokenValid`, `identity`,
+`reachable`), `credentialInUse` (`"session"`, `"api-key"`, or `null`), and `sessions[]` with
+`server`, `isDefault`, `identity`, `tokenValid`, `canRefresh`, and `expiresAt` per stored session.
+Prefer these over parsing the text output.
+
+Only the credentials that exist are printed: with no API key configured the `API key` lines are
+omitted, and vice versa. Both appear when both are present, which is the case where the pairing
+matters.
 
 ```bash
 pixee auth status
 # Server: https://pixee.example.com
-# Token: stored (valid)
-# Identity: api-token
+# API key: stored (valid)
+# API key identity: api-token
 # Session: dan.dunning@pixee.ai
 # Session token: valid (expires in 58m)
 # Refresh token: present
+# Commands will use: your session
 #
 # Other sessions:
 #   https://edge.example.com  expired (will refresh on next use)
@@ -187,12 +195,27 @@ pixee auth logout --server https://pixee.example.com
 
 For every subcommand except `pixee auth login`:
 
-- **Token:** `--token` flag → `PIXEE_TOKEN` env var → stored credentials.
+- **Token:** `--token` flag → **device session for that server** → `PIXEE_TOKEN` env var → stored
+  API key.
 - **Server:** `--server` flag → `PIXEE_SERVER` env var → stored config (set by `auth use`, or by a
   successful `auth login`). A subcommand-level `--server` takes precedence over the global one.
 
-Setting `PIXEE_TOKEN` + `PIXEE_SERVER` is the CI/CD and agent-automation path — no
-`pixee auth login` step required, and unaffected by anything the device flow does.
+The device session outranks both the env var and the stored key, so once you have logged in,
+ordinary commands are already running as you. **An API key beats the session only when handed to
+the CLI explicitly with `--token` on that invocation.** `PIXEE_TOKEN` sits below the session on
+purpose: an env var is indistinguishable from an `export` in a shell profile, so treating it as a
+deliberate choice meant anyone with one exported would log in, see a live session, and still have
+every command quietly send the shared key.
+
+Setting `PIXEE_TOKEN` + `PIXEE_SERVER` remains the CI/CD and agent-automation path — no
+`pixee auth login` step required. CI is unaffected in practice because a runner has no session on
+disk. On a workstation that has both, the session wins; use `--token` to force the key.
+
+If you are unsure which credential is in play, `pixee auth status` states it outright:
+
+```
+Commands will use: your session
+```
 
 There is no hardcoded default server. If none is configured, commands exit with an error directing
 the user to run `pixee auth login` or set `PIXEE_SERVER`.
@@ -209,12 +232,15 @@ When a command exits with code 2 ("Authentication failed"):
 3. If a per-user session expired and cannot refresh, run `pixee auth login` again.
 4. If the shared API key is invalid, rotate it in the admin console and log in again — preferably
    via `--token -` stdin or the `PIXEE_TOKEN` env var.
-5. **If `auth status` looks healthy but other commands still 401**, check whether the stored API key
-   belongs to a *different* deployment than the current server. `server` and `token` in the config
-   are a pair, and a device login repoints the server without touching the key — so commands outside
-   the `auth` group can end up sending one deployment's key to another. `auth login` prints a note on
-   stderr when it creates that situation. Fix it by storing a key for this deployment
-   (`pixee auth login --server <url> --token -`) or by unsetting the old one.
+5. **If `auth status` looks healthy but other commands still 401**, read its
+   `Commands will use:` line — it names the credential those commands actually send, which is not
+   always the one you were looking at. The usual cause is a stored API key belonging to a
+   *different* deployment than the current server: `server` and `token` in the config are a pair,
+   and a device login repoints the server without touching the key. With no session for the current
+   server, commands fall back to that mismatched key and 401. `auth login` prints a note on stderr
+   when it creates that situation. Fix it by logging in to this deployment
+   (`pixee auth login --server <url>`), storing a key for it
+   (`pixee auth login --server <url> --token -`), or unsetting the old one.
 
 ## Notes
 
@@ -230,9 +256,12 @@ When a command exits with code 2 ("Authentication failed"):
 
 ## Best practices
 
-- Prefer the device flow for interactive work so actions are attributable to a person.
+- Prefer the device flow for interactive work so actions are attributable to a person. After
+  `auth login`, ordinary commands use it with no further configuration.
 - Reserve the shared API key for CI/CD, and prefer `PIXEE_TOKEN` / `PIXEE_SERVER` env vars there —
   no local state, nothing to commit.
+- To force the API key on a machine that also has a session, pass `--token` explicitly; exporting
+  `PIXEE_TOKEN` will not override the session.
 - Use `pixee auth status` to confirm the configured server matches the deployment the credential
   came from; a mismatched server is the most common cause of 401s.
 
