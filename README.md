@@ -48,7 +48,7 @@ shasum -a 256 --ignore-missing -c SHA256SUMS
 ## Getting started
 
 ```bash
-# Log in as yourself — opens your browser to sign in through your identity provider
+# Log in as yourself; opens your browser to sign in through your identity provider
 pixee auth login --server https://pixee.example.com
 
 # Send an authenticated request to any Pixee REST API endpoint
@@ -62,7 +62,7 @@ Logging in this way gives you a short-lived token that identifies **you**, so yo
 actions are attributable and your permissions come from your identity provider.
 
 For CI and other unattended contexts, where nobody can approve a browser prompt,
-use your deployment's shared API key instead — read it from stdin rather than
+use your deployment's shared API key instead. Read it from stdin rather than
 passing it inline, so it stays out of your shell history:
 
 ```bash
@@ -130,7 +130,7 @@ individual skills directly with `npx skills add pixee/pixee-cli --skill <name>`:
 
 - [`pixee-shared`](./skills/pixee-shared/SKILL.md) — global flags, exit codes, error handling.
   Prerequisite for the others.
-- [`pixee-auth`](./skills/pixee-auth/SKILL.md) — `pixee auth login/use/token/status/logout`:
+- [`pixee-auth`](./skills/pixee-auth/SKILL.md): `pixee auth login/use/token/status/logout`,
   per-user device-flow login or the deployment's shared API key, bearer tokens for the REST API
   and the observability endpoints, credential precedence, and fixing exit-code-2 failures.
 - [`pixee-api`](./skills/pixee-api/SKILL.md) — the `pixee api` escape hatch and HAL discovery.
