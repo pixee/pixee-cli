@@ -154,11 +154,21 @@ Print the current authentication state: the configured server, whether the store
 validates, the per-user session's identity and expiry, and **every other server you hold a session
 for**. Read-only; never refreshes. Always exits 0, so it is a safe "am I logged in?" probe.
 
-`--json` is the machine-readable form: `configured` (whether any credential is set at all),
-`apiKey` (a structured object: `server`, `serverSource`, `tokenSource`, `tokenValid`, `identity`,
-`reachable`), `credentialInUse` (`"session"`, `"api-key"`, or `null`), and `sessions[]` with
-`server`, `isDefault`, `identity`, `tokenValid`, `canRefresh`, and `expiresAt` per stored session.
-Prefer these over parsing the text output.
+`--json` is the machine-readable form. Prefer it over parsing the text output. Keys:
+
+- `server`, and `configured` (whether any credential is set at all).
+- `credentialInUse`: `"session"`, `"api-key"`, or `null`.
+- `apiKey`: `server`, `serverSource`, `tokenSource`, `serverOverridesStored`, `tokenOverridesStored`,
+  `tokenValid`, `identity`, `reachable`. The two `*Source` fields are `"flag"`, `"env"`, or
+  `"stored"`, and are omitted when that half is unset, so read them with a default.
+- `session`: the one for the resolved server, as `loggedIn` plus `identity`, `tokenValid`,
+  `canRefresh`, `expiresAt` when logged in.
+- `sessions[]`: every stored session, each with `server`, `isDefault`, `identity`, `tokenValid`,
+  `canRefresh`, `expiresAt`.
+
+Both `tokenValid` and `reachable` use `null` for "unknown", so treat it as distinct from `false`.
+`tokenValid` is `null` whenever the server never answered, whether it was never probed or could not
+be reached; `reachable` is `null` only when nothing was probed and `false` when the probe failed.
 
 Only the credentials that exist are printed: with no API key configured the `API key` lines are
 omitted, and vice versa. Both appear when both are present, which is the case where the pairing
