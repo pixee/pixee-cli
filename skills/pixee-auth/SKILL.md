@@ -33,6 +33,17 @@ Prefer the device flow whenever a human is present. Ordinary commands (`repo lis
 API key at all. Reserve the key for CI and unattended automation, where no one can approve a
 browser prompt.
 
+**The API key does not authenticate the `/o11y/` endpoints, by design.** Those sit behind a proxy
+that introspects tokens with the deployment's identity provider, and the key is a deployment-wide
+value from the KOTS admin console rather than an identity-provider token, so there is no one for the
+proxy to resolve it to. Observability is per-user only: reaching logs, metrics, or traces means
+running `pixee auth login` first.
+
+The rejection is a **302 to the identity provider's login page**, not a 401. That matters when
+scripting: follow redirects and you get `200 text/html` with a login page, which a status-code check
+reads as success and a JSON parser then fails on for the wrong reason. Do not pass `-L` to these
+endpoints, and treat any non-2xx or any `text/html` response as unauthenticated.
+
 The two are stored separately, so adopting the device flow never disturbs an existing API-key
 setup; an existing key stays on disk and keeps working as the fallback.
 
