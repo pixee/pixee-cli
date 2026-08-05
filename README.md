@@ -48,8 +48,8 @@ shasum -a 256 --ignore-missing -c SHA256SUMS
 ## Getting started
 
 ```bash
-# Authenticate against a Pixee deployment
-pixee auth login --server https://pixee.example.com --token <your-token>
+# Log in as yourself; opens your browser to sign in through your identity provider
+pixee auth login --server https://pixee.example.com
 
 # Send an authenticated request to any Pixee REST API endpoint
 pixee api /api/v1/repositories --paginate
@@ -57,6 +57,20 @@ pixee api /api/v1/repositories --paginate
 # List workflows configured for a repository
 pixee workflow list --repo my-repo
 ```
+
+Logging in this way gives you a short-lived token that identifies **you**, so your
+actions are attributable and your permissions come from your identity provider.
+
+For CI and other unattended contexts, where nobody can approve a browser prompt,
+use your deployment's shared API key instead. Read it from stdin rather than
+passing it inline, so it stays out of your shell history:
+
+```bash
+echo -n "$PIXEE_TOKEN" | pixee auth login --server https://pixee.example.com --token -
+```
+
+Working with more than one deployment? `pixee auth use <server>` sets the one
+later commands target, and `pixee auth status` shows every session you hold.
 
 Run `pixee --help` to see every subcommand.
 
@@ -116,8 +130,9 @@ individual skills directly with `npx skills add pixee/pixee-cli --skill <name>`:
 
 - [`pixee-shared`](./skills/pixee-shared/SKILL.md) — global flags, exit codes, error handling.
   Prerequisite for the others.
-- [`pixee-auth`](./skills/pixee-auth/SKILL.md) — login, status, credential precedence, and
-  fixing exit-code-2 failures.
+- [`pixee-auth`](./skills/pixee-auth/SKILL.md): `pixee auth login/use/token/status/logout`,
+  per-user device-flow login or the deployment's shared API key, bearer tokens for the REST API
+  and the observability endpoints, credential precedence, and fixing exit-code-2 failures.
 - [`pixee-api`](./skills/pixee-api/SKILL.md) — the `pixee api` escape hatch and HAL discovery.
 - [`pixee-preferences`](./skills/pixee-preferences/SKILL.md) — read and write Pixee organization
   preferences from files or stdin.
