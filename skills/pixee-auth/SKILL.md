@@ -2,7 +2,7 @@
 name: pixee-auth
 description: "Authenticate to a Pixee deployment using the per-user OAuth2 device flow or the deployment's shared API key, choose which deployment commands target, mint bearer tokens for the REST API and observability endpoints, and inspect the current authentication state."
 metadata:
-  version: 1.3.0
+  version: 1.1.0
   openclaw:
     category: "developer-tools"
     requires:
@@ -42,8 +42,9 @@ setup; an existing key stays on disk and keeps working as the fallback.
 
 With no `--token`, runs the OAuth2 device-authorization flow (RFC 8628) against the deployment's
 identity provider. Prints a verification URL (and opens your browser unless `--no-browser`), waits
-for you to approve, then caches the access and refresh tokens with `0600` permissions. Tokens are
-stored per-server, so you can be logged in to several deployments at once.
+for you to approve, then caches the access and refresh tokens with `0600` permissions. Sessions are
+keyed by deployment, so you can be logged in to several at once. However you spell the server on the
+way in, full URL or bare host and in any host casing, it resolves to the same session.
 
 ```bash
 # Device flow against the configured server
@@ -92,9 +93,9 @@ pixee auth use ddunning.getpixee.com
 
 That default also gets set by a successful `auth login`, but only as a side effect of whichever
 login happened last. `auth use` makes it deliberate, the same idea as `kubectl config use-context`.
-Only the server changes: device-flow sessions live in their own per-server files and any shared API
-key in the config is preserved, so switching deployments never logs you out or clears a key that CI
-depends on.
+Only the server changes: every device-flow session is kept under its own deployment, and any shared
+API key in the config is preserved, so switching deployments never logs you out of the one you left
+or clears a key that CI depends on.
 
 It does not require an existing session, so you can point at a deployment before logging in to it;
 it says so on stderr rather than failing.
@@ -180,6 +181,13 @@ pixee auth status
 Expired sessions are listed too. They are the ones you cannot otherwise see, and this is where you
 find out what to pass `auth token --server`. With nothing configured at all it collapses to one
 line rather than repeating "not configured" for each credential.
+
+`Commands will use:` reports what will actually be sent, not merely what is stored. A session that
+has expired **and** has no refresh token cannot be renewed, so commands fall back to the API key and
+this line names the key, even though the `Session:` block above it still shows the session exists.
+That is the state to watch for: it is the one where you would otherwise assume the audit log will
+name you, and it names the shared `api-token` principal instead. `--json` agrees, reporting
+`"credentialInUse": "api-key"` next to `"tokenValid": false`.
 
 ### pixee auth logout
 
