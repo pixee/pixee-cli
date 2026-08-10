@@ -2,7 +2,7 @@
 name: pixee-integration
 description: "List Pixee integrations to discover the id, type, and capabilities of each scanner integration registered with the org."
 metadata:
-  version: 1.0.0
+  version: 1.1.0
   openclaw:
     category: "developer-tools"
     requires:
@@ -52,6 +52,29 @@ distinguishes scan kinds at a finer grain (e.g., `polaris_sast` vs `polaris_sca`
 `gitlab_sast` vs `gitlab_dependency_scanning`), while the integration `type` collapses to the
 provider family.
 
+Filter flags:
+
+- `--search <text>` — substring match against integration metadata (server-side).
+- `--type <type>` — filter by integration type. One of `appscan`, `arnica`, `azure`, `bitbucket`,
+  `checkmarx`, `datadog`, `github`, `gitlab`, `polaris`, `sonar`, `veracode`.
+
+## pixee integration view
+
+```
+pixee integration view <integration-id>
+```
+
+Fetch a single integration by ID. `<integration-id>` is the value shown in the `id` column of
+`pixee integration list`.
+
+Default text mode emits a sectioned `Key: value` block; use `--output json` (or `--json`) for the
+full HAL body. An `Expand:` line names the relations the integration offers via its `_links`.
+
+- `--expand <relation>` — **repeatable**. Follow one of the integration's `_links` and render it
+  inline, saving a second `pixee api` call. Pass the relation name shown on the `Expand:` line.
+
+A non-existent ID returns the standard not-found error and exits 3.
+
 ## Examples
 
 ```bash
@@ -61,8 +84,20 @@ pixee integration list
 # JSON shape for programmatic consumption
 pixee integration list --json | jq '.[] | {id, type, capabilities}'
 
+# Filter to GitHub integrations only, server-side
+pixee integration list --type github
+
+# Substring search against integration metadata
+pixee integration list --search sonar
+
 # Find integrations that can push triage verdicts back to the source
 pixee integration list --json | jq '.[] | select(.capabilities | index("triage-push"))'
+
+# Inspect a single integration by ID
+pixee integration view sonar-default
+
+# Follow one of the integration's expandable relations inline (see its Expand: line for names)
+pixee integration view sonar-default --expand <relation>
 
 # Discover the sonar integration id and use it in a scan-create call
 integration_id=$(pixee integration list --json \
@@ -83,7 +118,8 @@ pixee api "$href"
   `<type>-default` string by hand, since that pattern is a convention the platform can change.
 - Filter by `type` when looking for a specific scanner family. The org may have multiple
   integrations of the same type (different GitHub Apps, multiple GitLab tenants) and `type`
-  alone is not unique.
+  alone is not unique. `--search` and `--type` are both server-side, so prefer them over
+  post-filtering `list --json` in `jq`.
 - Read `capabilities` before assuming an integration can do more than receive uploads.
   `triage-push` is the load-bearing one today; treat the array as forward-compatible and check
   for membership (`jq '.capabilities | index("...")'`) rather than equality.
