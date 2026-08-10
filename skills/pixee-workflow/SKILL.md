@@ -2,7 +2,7 @@
 name: pixee-workflow
 description: "List, create, update, run, and delete Pixee workflows on a repository with partial-update semantics across event kinds."
 metadata:
-  version: 1.0.0
+  version: 1.1.0
   openclaw:
     category: "developer-tools"
     requires:
@@ -17,8 +17,8 @@ metadata:
 > handling, `../pixee-auth/SKILL.md` if authentication needs to be configured, and
 > `../pixee-repo/SKILL.md` for the `--repo` resolution protocol.
 
-`pixee workflow` manages Pixee workflows for a single repository: list, create, update, run, and
-delete.
+`pixee workflow` manages Pixee workflows for a single repository: list, view, create, update, run,
+and delete.
 
 ## pixee workflow list
 
@@ -30,6 +30,24 @@ pixee workflow list --repo <name-or-uuid>
 - Text output is tab-separated with columns `id`, `event`, `action`, `tool`.
 - Pagination is transparent — every workflow on the repo is emitted in one call. There is no
   `--paginate` flag here; `--paginate` only lives on `pixee api`.
+
+## pixee workflow view
+
+```
+pixee workflow view <workflow-id>
+```
+
+Fetch a single workflow by UUID. `<workflow-id>` is the value shown in the `id` column of
+`pixee workflow list`.
+
+Default text mode prints a sectioned `Key: value` block of the workflow's headline fields — the
+same ones `list` surfaces (`id`, `name`, `event`, `action`, `tool`) plus the event-specific
+configuration (`cadence`/`branch`/`start` for `schedule`, `branch` for `new-scan`,
+`target-branch`/`source-branch` for `pull-request-scan`) — colon-separated, one field per line.
+Use `--output json` (or `--json`) for the full HAL body, which adds the `_links` envelope and any
+fields the text view omits. No flags beyond the global ones.
+
+A non-existent UUID returns the standard not-found error and exits 3.
 
 ## pixee workflow create
 
@@ -142,6 +160,12 @@ pixee workflow delete <workflow-id>
 ```bash
 # List every workflow on a repo
 pixee workflow list --repo pixee/pixee-platform
+
+# Inspect a single workflow by UUID
+pixee workflow view a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d
+
+# Pull the full HAL body to see the event-specific configuration
+pixee workflow view a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d --json | jq '{event, action, tool}'
 
 # Daily scheduled scan, patching high/critical Sonar findings on the default branch
 pixee workflow create schedule \
