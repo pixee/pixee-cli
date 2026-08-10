@@ -27,7 +27,7 @@ pixee workflow list --repo <name-or-uuid>
 ```
 
 - `--repo` is **required**.
-- Text output is tab-separated with columns `id`, `event`, `action`, `tool`.
+- Text output is tab-separated with columns `id`, `name`, `event`, `action`, `tool`.
 - Pagination is transparent — every workflow on the repo is emitted in one call. There is no
   `--paginate` flag here; `--paginate` only lives on `pixee api`.
 

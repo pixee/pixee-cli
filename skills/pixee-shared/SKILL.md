@@ -2,7 +2,7 @@
 name: pixee-shared
 description: "Describe the global flags, output format, exit codes, error handling, and TLS trust troubleshooting used by every Pixee CLI subcommand."
 metadata:
-  version: 1.1.0
+  version: 1.2.0
   openclaw:
     category: "developer-tools"
     requires:
@@ -55,6 +55,9 @@ server-precedence rules, and `pixee auth status` — see `pixee-auth`.
 ## Global flags
 
 - `--server <url>` — override the configured server for a single invocation.
+- `--token <token>` — API token for this invocation; overrides `PIXEE_TOKEN` and the stored
+  config. See `pixee-auth` for the full credential-resolution order and the `--token -` stdin
+  pattern.
 - `--output text|json` — choose the output format. Default is `text` (flat, line-oriented output
   suitable for `grep`/`awk`). Use `json` for machine-readable output and pipe to `jq` for
   filtering; `pixee` does not embed a jq implementation.

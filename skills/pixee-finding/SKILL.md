@@ -2,7 +2,7 @@
 name: pixee-finding
 description: "List, filter, and view Pixee findings for a scan with aggregate counts across triage, fix, and SCA outcomes."
 metadata:
-  version: 1.0.0
+  version: 1.1.0
   openclaw:
     category: "developer-tools"
     requires:
@@ -74,21 +74,25 @@ the same flag.
 - `--min-severity-score <num>` / `--max-severity-score <num>` — bound the severity score (0.0–10.0).
   Not repeatable.
 - `--triage-status <s>` — one of `completed`, `failed`, `no-recommendations-available`.
-- `--triage-suggested <s>` — one of `true_positive`, `likely_true_positive`, `inconclusive`,
-  `false_positive`, `wont_fix`, `blocked`, `excluded`, `not_triaged`.
+- `--triage-suggested <s>` — one of `true_positive`, `inconclusive`, `false_positive`, `wont_fix`,
+  `blocked`, `excluded`, `not_triaged`, `error`, `suspicious`.
 - `--fix-status <s>` — one of `completed`, `failed`, `no-recommendations-available`, `blocked`,
   `excluded`.
 - `--fix-confidence <s>` — one of `high`, `medium`, `low`, `no-rating`.
 - `--sca-status <s>` — one of `completed`, `failed`, `blocked`, `excluded`, `not-analyzed`.
-- `--sca-classification <s>` — one of `exploitable`, `not-exploitable`, `inconclusive`.
+- `--sca-classification <s>` — one of `exploitable`, `not-exploitable`, `inconclusive`,
+  `potentially-exploitable`.
 - `--patch-status <s>` — one of `issued`, `merged`.
 - `--severity-update <s>` — one of `increased`, `decreased`, `no_update`. Filters by the
   severity-update relation.
 - `--analyzed` — only fully-analyzed findings (every analysis type has reached a terminal state).
 - `--no-analyzed` — only not-fully-analyzed findings.
 - `--view validated` — composite view filter. Currently only `validated` is defined.
+- `--results <scope>` — **repeatable**. Analysis results to include per finding. One of
+  `representative` (default) or `all`.
 - `--query <text>` — case-insensitive search across finding id, title, rule, and file path.
-- `--sort <field>` — `pixee-intelligence` (default), `severity`, or `pixee-severity`.
+- `--sort <field>` — `pixee-intelligence` (default), `severity`, `pixee-severity`, or
+  `suggested-severity`.
 - `--order <asc|desc>` — sort direction. Default `desc`.
 
 ## pixee finding view

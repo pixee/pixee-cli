@@ -2,7 +2,7 @@
 name: pixee-analysis
 description: "List, view, and delete Pixee analyses with filters and optional polling until the analysis reaches a terminal state."
 metadata:
-  version: 1.0.0
+  version: 1.1.0
   openclaw:
     category: "developer-tools"
     requires:
@@ -43,6 +43,8 @@ Filter flags:
 
 - `--repo <name-or-uuid>` — **repeatable**. Restrict to one or more repositories. Names resolve
   via the protocol documented in `pixee-repo`. Multiple `--repo` flags OR together.
+- `--scan <scan-id>` — **repeatable**. Restrict to one or more scan UUIDs. Multiple `--scan`
+  flags OR together.
 - `--branch <name>` — exact branch name (case-sensitive).
 - `--state <state>` — **repeatable**. One of `queued`, `in-progress`, `skipped`, `completed`,
   `failed`. Multiple values OR together.
@@ -106,6 +108,9 @@ pixee analysis list --repo pixee/pixee-platform --repo analysis-service \
 # Completed sonar analyses, JSON for downstream processing
 pixee analysis list --tool sonar --state completed --json \
   | jq '.[] | {id, state, updated_at}'
+
+# Analyses for a specific scan
+pixee analysis list --scan e5e1ebe6-93f3-4426-a98a-6dc6af41b468
 
 # View an analysis by UUID
 pixee analysis view 7a8b9c0d-1e2f-3a4b-5c6d-7e8f9a0b1c2d
