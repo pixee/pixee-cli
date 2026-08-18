@@ -1,6 +1,8 @@
 ---
 name: pixee-workflow
 description: "List, create, update, run, and delete Pixee workflows on a repository with partial-update semantics across event kinds."
+license: Apache-2.0
+compatibility: Requires the pixee CLI binary on PATH
 metadata:
   version: 1.1.0
   openclaw:

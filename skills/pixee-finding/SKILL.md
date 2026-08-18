@@ -1,6 +1,8 @@
 ---
 name: pixee-finding
 description: "List, filter, and view Pixee findings for a scan with aggregate counts across triage, fix, and SCA outcomes."
+license: Apache-2.0
+compatibility: Requires the pixee CLI binary on PATH
 metadata:
   version: 1.1.0
   openclaw:

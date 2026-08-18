@@ -1,0 +1,11 @@
+{
+  "$schema": "https://agent-plugins.org/schemas/1.0.0/plugin.schema.json",
+  "name": "pixee-cli",
+  "version": "1.0.0",
+  "description": "Skills for using the Pixee CLI: authentication, scans, workflows, repositories, findings, and API access.",
+  "author": { "name": "Pixee, Inc.", "url": "https://pixee.ai" },
+  "homepage": "https://github.com/pixee/pixee-cli",
+  "repository": "https://github.com/pixee/pixee-cli",
+  "license": "Apache-2.0",
+  "keywords": ["pixee", "cli", "security", "appsec", "sast", "code-scanning", "vulnerability-management"]
+}

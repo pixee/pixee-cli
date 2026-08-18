@@ -1,6 +1,8 @@
 ---
 name: pixee-shared
 description: "Describe the global flags, output format, exit codes, error handling, and TLS trust troubleshooting used by every Pixee CLI subcommand."
+license: Apache-2.0
+compatibility: Requires the pixee CLI binary on PATH
 metadata:
   version: 1.2.0
   openclaw:

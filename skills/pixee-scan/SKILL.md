@@ -1,6 +1,8 @@
 ---
 name: pixee-scan
 description: "List, view, analyze, create, and delete Pixee scans with filters for repository, branch, detector tool, and analysis state."
+license: Apache-2.0
+compatibility: Requires the pixee CLI binary on PATH
 metadata:
   version: 1.0.0
   openclaw:

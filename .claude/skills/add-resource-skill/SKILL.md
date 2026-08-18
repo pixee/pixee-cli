@@ -39,6 +39,8 @@ Copy this exactly and fill in the angle-bracket placeholders:
 ---
 name: pixee-<noun>
 description: "<verb-first, 100-130 chars, no colons, em-dashes, or parens>"
+license: Apache-2.0
+compatibility: Requires the pixee CLI binary on PATH
 metadata:
   version: 1.0.0
   openclaw:
@@ -57,6 +59,8 @@ The `description` has a triple constraint, each one load-bearing:
 - **(c) No colons, em-dashes, or parentheses.** They break the skills.sh picker silently. Commit `f0e73a3` (ISS-6922) rewrote all five existing descriptions for exactly this reason. Length: 100–130 chars.
 
 `version` stays `1.0.0` until we agree to start bumping. Don't invent a scheme.
+
+`license` is always `Apache-2.0` — it matches `skills/LICENSE`, which covers the whole directory. `compatibility` is always `Requires the pixee CLI binary on PATH` unless the skill has a genuinely different runtime dependency. Both fields complete the Agent Skills spec (agentskills.io/specification); every skill in this repo carries them (ISS-8576).
 
 `cliHelp` is `pixee <subcommand> --help` for command-backed skills; `pixee --help` for cross-cutting skills like `pixee-shared`.
 
@@ -87,6 +91,7 @@ Don't try to invent shape. Open the closest sibling and follow its skeleton. Eve
 2. **License.** The `skills/` directory is Apache-2.0 via `skills/LICENSE`. No per-file header. `skills/NOTICE` stays untouched unless the new skill pulls in third-party attributions (unlikely for documentation).
 3. **Commit style.** Follow recent history: short imperative + issue tag, e.g. `Add pixee-scan skill (ISS-XXXX)`. Use a fresh issue number — ISS-6922 is closed.
 4. **Picker smoke test.** Run `npx skills add pixee/pixee-cli` (no `--all`) and confirm the new entry appears in the interactive picker with its full description visible. If it's missing, the `description` has picker-breaking characters — fix before landing.
+5. **`plugin.json`.** The repo root `plugin.json` (VS Code Agent Plugins / Copilot CLI marketplace manifest) auto-discovers skills from `skills/*/SKILL.md` — adding or removing a skill doesn't require touching it. It versions independently of any skill's `metadata.version`, starting at `1.0.0`. Bump it (semver) only when `plugin.json`'s own fields change — name, description, keywords, license, author, repository — not on every skill edit.
 
 ## Updating an existing skill
 
@@ -94,6 +99,7 @@ Same rules, applied on the edit:
 
 - Preserve the description's verb-first, picker-friendly shape on any rewrite. A rewrite that introduces a colon or em-dash is a picker regression, not a prose polish.
 - Keep `version` decisions consistent across siblings. Don't bump one skill's version in isolation — the set moves together or stays.
+- `license` and `compatibility` are constants (see Frontmatter template above) — an edit should never change them unless the skill's actual binary dependency changes.
 - Don't diverge PREREQUISITE phrasing from the rest of the set in a single-skill edit. If the convention needs to change, update all five siblings in one commit.
 
 ## Anti-patterns

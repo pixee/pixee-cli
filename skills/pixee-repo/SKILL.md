@@ -1,6 +1,8 @@
 ---
 name: pixee-repo
 description: "List, view, and delete Pixee repositories with shared name-or-UUID resolution used by every targeted subcommand."
+license: Apache-2.0
+compatibility: Requires the pixee CLI binary on PATH
 metadata:
   version: 1.0.0
   openclaw:
