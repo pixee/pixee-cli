@@ -1,8 +1,8 @@
 {
-  "name": "pixee-cli",
+  "name": "pixee",
   "owner": { "name": "Pixee, Inc." },
   "metadata": {
-    "description": "Skills for using the Pixee CLI: authentication, scans, workflows, repositories, findings, and API access.",
+    "description": "Pixee coding-agent plugins.",
     "version": "1.0.0"
   },
   "plugins": [

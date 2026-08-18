@@ -119,15 +119,18 @@ teach coding agents how to drive the CLI and are licensed separately under the A
 2.0. Two manifests describe the same plugin, since the ecosystem hasn't converged on one format yet:
 
 - [`plugin.json`](./plugin.json) at the repo root — the [Agent Plugins](https://agent-plugins.org)
-  standard, read by VS Code, GitHub Copilot CLI, and Cursor.
-- [`.claude-plugin/`](./.claude-plugin/) — Claude Code's plugin format, also read by OpenAI Codex CLI.
+  standard, read by VS Code and Cursor.
+- [`.claude-plugin/`](./.claude-plugin/) — Claude Code's plugin format, also read by GitHub Copilot CLI
+  and OpenAI Codex CLI. Its marketplace is named `pixee`, not `pixee-cli`, so future Pixee plugins can
+  join the same marketplace without a naming collision.
 
 Pick the section for your agent below. All of them install the same 10 skills.
 
 ### GitHub Copilot CLI
 
 ```bash
-copilot plugin install pixee/pixee-cli
+copilot plugin marketplace add pixee/pixee-cli
+copilot plugin install pixee-cli@pixee
 ```
 
 ### VS Code (GitHub Copilot Chat)
@@ -150,14 +153,14 @@ at `pixee/pixee-cli`. Cursor loads Agent Plugins-spec plugins without changes.
 
 ```bash
 claude plugin marketplace add pixee/pixee-cli
-claude plugin install pixee-cli@pixee-cli
+claude plugin install pixee-cli@pixee
 ```
 
 ### OpenAI Codex CLI
 
 ```bash
 codex plugin marketplace add pixee/pixee-cli
-codex plugin add pixee-cli@pixee-cli
+codex plugin add pixee-cli@pixee
 ```
 
 Requires Codex CLI 0.147.0 or later — earlier versions don't support portable Agent Plugin installs.

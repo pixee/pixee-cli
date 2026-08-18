@@ -92,10 +92,12 @@ Don't try to invent shape. Open the closest sibling and follow its skeleton. Eve
 3. **Commit style.** Follow recent history: short imperative + issue tag, e.g. `Add pixee-scan skill (ISS-XXXX)`. Use a fresh issue number — ISS-6922 is closed.
 4. **Picker smoke test.** Run `npx skills add pixee/pixee-cli` (no `--all`) and confirm the new entry appears in the interactive picker with its full description visible. If it's missing, the `description` has picker-breaking characters — fix before landing.
 5. **Plugin manifests.** Two manifests both auto-discover skills from `skills/*/SKILL.md` — adding or removing a skill doesn't require touching either:
-   - Root [`plugin.json`](../../../plugin.json) — the Agent Plugins spec, read by VS Code, Copilot CLI, and Cursor.
-   - [`.claude-plugin/plugin.json`](../../../.claude-plugin/plugin.json) and [`.claude-plugin/marketplace.json`](../../../.claude-plugin/marketplace.json) — Claude Code's format, also read by Codex CLI.
+   - Root [`plugin.json`](../../../plugin.json) — the Agent Plugins spec, read by VS Code and Cursor.
+   - [`.claude-plugin/plugin.json`](../../../.claude-plugin/plugin.json) and [`.claude-plugin/marketplace.json`](../../../.claude-plugin/marketplace.json) — Claude Code's format, also read by GitHub Copilot CLI and Codex CLI.
 
    Both version independently of any skill's `metadata.version`, starting at `1.0.0`, and move together — they describe the same plugin. Bump them (semver, all three files in lockstep) only when the plugin's own identity changes — name, description, keywords, license, author, repository — not on every skill edit.
+
+   `marketplace.json`'s top-level `name` is `pixee` (the org), deliberately not `pixee-cli` (the repo/plugin) — this lets future Pixee plugins join the same marketplace without a rename. Never change it to match the repo name; that's not a bug to fix.
 
 ## Updating an existing skill
 
