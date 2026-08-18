@@ -1,6 +1,8 @@
 ---
 name: pixee-integration
 description: "List Pixee integrations to discover the id, type, and capabilities of each scanner integration registered with the org."
+license: Apache-2.0
+compatibility: Requires the pixee CLI binary on PATH
 metadata:
   version: 1.1.0
   openclaw:

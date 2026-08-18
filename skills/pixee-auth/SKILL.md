@@ -1,6 +1,8 @@
 ---
 name: pixee-auth
 description: "Authenticate to a Pixee deployment using the per-user OAuth2 device flow or the deployment's shared API key, choose which deployment commands target, mint bearer tokens for the REST API and observability endpoints, and inspect the current authentication state."
+license: Apache-2.0
+compatibility: Requires the pixee CLI binary on PATH
 metadata:
   version: 1.1.0
   openclaw:

@@ -1,6 +1,8 @@
 ---
 name: pixee-preferences
 description: "Read and write Pixee organization preferences from files or stdin with optimistic concurrency handled by the CLI."
+license: Apache-2.0
+compatibility: Requires the pixee CLI binary on PATH
 metadata:
   version: 1.0.0
   openclaw:

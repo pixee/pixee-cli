@@ -1,6 +1,8 @@
 ---
 name: pixee-analysis
 description: "List, view, and delete Pixee analyses with filters and optional polling until the analysis reaches a terminal state."
+license: Apache-2.0
+compatibility: Requires the pixee CLI binary on PATH
 metadata:
   version: 1.1.0
   openclaw:
