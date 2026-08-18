@@ -71,6 +71,29 @@ This is pagination-strategy-agnostic: the CLI does not construct `page-number` q
 itself, so if the API migrates to a different strategy the same `--paginate` flag continues to
 work.
 
+## Non-JSON resources
+
+`pixee api` always sends `Accept: application/json` and has **no flag to override request
+headers** — there is no `-H`/`--header`. That is fine for the HAL API itself, but a handful of
+endpoints serve a specific representation of a resource in a non-JSON format (for example, a
+triage result's `report` and `article` links from `pixee-finding`, which render as markdown). Hit
+one of those through `pixee api` and it returns `406 Not Acceptable`, not JSON — that response is
+expected behavior for a mismatched Accept header, not a broken endpoint or a sign to keep probing
+with different flags.
+
+For those endpoints, drop to `curl` directly, using `pixee auth token` to mint the bearer token
+(same pattern `pixee-auth` documents for the `/o11y/` endpoints — the token is a bare string, so
+the `Authorization` header still needs an explicit `Bearer ` prefix):
+
+```bash
+TOKEN=$(pixee auth token --server https://pixee.example.com)
+curl -sS -H "Authorization: Bearer ${TOKEN}" -H "Accept: text/markdown" \
+  https://pixee.example.com/api/v1/triage-results/<id>/report
+```
+
+Reach for this only when a link's whole purpose is a non-JSON representation. If the resource is
+ordinary JSON, `pixee api` already sends the right `Accept` header and needs no help.
+
 ## Examples
 
 ```bash
@@ -96,3 +119,6 @@ pixee api /api/v1/repositories --paginate | jq '.[] | .full_name'
 - Prefer dedicated subcommands (`pixee repo list`, `pixee workflow list`) when they exist — they
   encode best practices on top of `pixee api`. Use `pixee api` as the escape hatch for operations
   that do not yet have a subcommand.
+- A `406 Not Acceptable` from `pixee api` means the resource only serves non-JSON content — see
+  **Non-JSON resources** above for the `curl` fallback. Don't retry with different `pixee api`
+  flags; there is no header override to reach for.

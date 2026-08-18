@@ -97,6 +97,20 @@ the same flag.
   `suggested-severity`.
 - `--order <asc|desc>` — sort direction. Default `desc`.
 
+## Triage result links
+
+A `triage`-type representative-result carries its own `_links` beyond `self`/`finding`/`analysis`:
+`report` and `article` (both markdown-rendered explanations of the triage decision) and, for some
+outcome types, `verification`. `pixee api` requests JSON and gets `406 Not Acceptable` from these
+endpoints — see `pixee-api`'s **Non-JSON resources** section for the curl fallback that works.
+
+Before chasing `report`/`article`, check whether you already have what you need: the item's own
+`outcome.summary` — and on a blocked fix, `outcome.reason` / `outcome.details` — already inlines the
+triage/fix rationale in `pixee finding list` and `pixee finding view` output. `report`/`article` are
+worth a separate fetch mainly when you want the longer-form, formatted writeup instead of that
+summary. Not every link is populated for every outcome type — a 404 on `verification` means it does
+not apply to this result, not that something is broken.
+
 ## pixee finding view
 
 ```
@@ -161,3 +175,9 @@ pixee finding view AZ4JOwsipJDH8099SpHt --scan "$scan_id" --json \
   and on each result (`analysis`, `changesets`, `patches`, `latest-patch`) are the canonical way to
   reach related resources — follow them with `pixee api <href>` rather than guessing API paths.
   See `pixee-api` for HAL conventions and `--paginate`.
+- The **latest** scan for a branch is the current state of that branch, full stop. If it has zero
+  findings matching a filter (e.g. `--triage-suggested true_positive --stats` returns `"total": 0`),
+  that is the answer — "there are no true positives on the latest scan of `main`" — not a signal to
+  walk backward through older scans looking for a nonzero count. An older scan reflects a stale
+  commit and answering from one silently changes the question from "what's true today" to "what was
+  once true." Only look at a non-latest scan when the user asks about history explicitly.
