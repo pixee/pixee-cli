@@ -12,8 +12,8 @@ security backlog instead of growing it. Learn more at [pixee.ai](https://pixee.a
 
 This repository distributes `pixee`, the official command-line interface for the Pixee platform. It
 is intended for Pixee customers and gives authenticated access to the Pixee REST API through dedicated
-subcommands and a generic `pixee api` passthrough, and ships with coding-agent skills so tools like
-Claude Code and OpenAI Codex can drive it natively.
+subcommands and a generic `pixee api` passthrough, and ships as an installable coding-agent plugin so
+tools like GitHub Copilot, VS Code, Claude Code, and OpenAI Codex can drive it natively.
 
 ## Install
 
@@ -112,11 +112,36 @@ order (bundled Mozilla CAs → system keychain when `NODE_USE_SYSTEM_CA=1` → `
 [Node's `NODE_EXTRA_CA_CERTS` docs](https://nodejs.org/api/cli.html#node_extra_ca_certsfile) for the env-var contract
 Bun inherits.
 
-## Coding agent skills
+## Coding agent plugin
 
-The Pixee CLI ships with [skills.sh](https://skills.sh)-formatted skills that teach coding agents
-(Claude Code, OpenAI Codex, and others) how to drive the CLI. The skills live under
-[`skills/`](./skills/) and are licensed separately under the Apache License, Version 2.0.
+The Pixee CLI ships as an installable [Agent Plugin](https://agent-plugins.org) ([`plugin.json`](./plugin.json))
+bundling skills that teach coding agents (GitHub Copilot, Claude Code, OpenAI Codex, and others) how to
+drive the CLI. The skills live under [`skills/`](./skills/) and are licensed separately under the Apache
+License, Version 2.0.
+
+### GitHub Copilot CLI
+
+```bash
+copilot plugin install pixee/pixee-cli
+```
+
+### VS Code (GitHub Copilot Chat)
+
+Register this repo as a plugin marketplace in your `settings.json`:
+
+```jsonc
+"chat.plugins.enabled": true,
+"chat.plugins.marketplaces": ["pixee/pixee-cli"]
+```
+
+Then search `@agentPlugins` in the Extensions view and install `pixee-cli`.
+
+### `npx skills` (fallback)
+
+Tools that don't yet support the Agent Plugins spec can install the underlying
+[skills.sh](https://skills.sh)-formatted skills directly. This method only installs `SKILL.md` files — it
+skips whatever else the plugin bundles (agents, hooks, MCP servers) and won't stay in sync with the
+plugin's marketplace listing, so prefer the plugin install methods above when your agent supports them.
 
 Install every skill at once:
 
