@@ -12,8 +12,8 @@ security backlog instead of growing it. Learn more at [pixee.ai](https://pixee.a
 
 This repository distributes `pixee`, the official command-line interface for the Pixee platform. It
 is intended for Pixee customers and gives authenticated access to the Pixee REST API through dedicated
-subcommands and a generic `pixee api` passthrough, and ships with coding-agent skills so tools like
-Claude Code and OpenAI Codex can drive it natively.
+subcommands and a generic `pixee api` passthrough, and ships as an installable coding-agent plugin so
+tools like GitHub Copilot, VS Code, Cursor, Claude Code, and OpenAI Codex can drive it natively.
 
 ## Install
 
@@ -112,11 +112,65 @@ order (bundled Mozilla CAs → system keychain when `NODE_USE_SYSTEM_CA=1` → `
 [Node's `NODE_EXTRA_CA_CERTS` docs](https://nodejs.org/api/cli.html#node_extra_ca_certsfile) for the env-var contract
 Bun inherits.
 
-## Coding agent skills
+## Coding agent plugin
 
-The Pixee CLI ships with [skills.sh](https://skills.sh)-formatted skills that teach coding agents
-(Claude Code, OpenAI Codex, and others) how to drive the CLI. The skills live under
-[`skills/`](./skills/) and are licensed separately under the Apache License, Version 2.0.
+The Pixee CLI ships as an installable plugin bundling the skills under [`skills/`](./skills/), which
+teach coding agents how to drive the CLI and are licensed separately under the Apache License, Version
+2.0. Two manifests describe the same plugin, since the ecosystem hasn't converged on one format yet:
+
+- [`plugin.json`](./plugin.json) at the repo root — the [Agent Plugins](https://agent-plugins.org)
+  standard, read by VS Code and Cursor.
+- [`.claude-plugin/`](./.claude-plugin/) — Claude Code's plugin format, also read by GitHub Copilot CLI
+  and OpenAI Codex CLI. Its marketplace is named `pixee`, not `pixee-cli`, so future Pixee plugins can
+  join the same marketplace without a naming collision.
+
+Pick the section for your agent below. All of them install the same 10 skills.
+
+### GitHub Copilot CLI
+
+```bash
+copilot plugin marketplace add pixee/pixee-cli
+copilot plugin install pixee-cli@pixee
+```
+
+### VS Code (GitHub Copilot Chat)
+
+Register this repo as a plugin marketplace in your `settings.json`:
+
+```jsonc
+"chat.plugins.enabled": true,
+"chat.plugins.marketplaces": ["pixee/pixee-cli"]
+```
+
+Then search `@agentPlugins` in the Extensions view and install `pixee-cli`.
+
+### Cursor
+
+From the Cursor dashboard: **Plugins → Team Marketplaces → Add Marketplace → Import from Repo**, pointing
+at `pixee/pixee-cli`. Cursor loads Agent Plugins-spec plugins without changes.
+
+### Claude Code
+
+```bash
+claude plugin marketplace add pixee/pixee-cli
+claude plugin install pixee-cli@pixee
+```
+
+### OpenAI Codex CLI
+
+```bash
+codex plugin marketplace add pixee/pixee-cli
+codex plugin add pixee-cli@pixee
+```
+
+Requires Codex CLI 0.147.0 or later — earlier versions don't support portable Agent Plugin installs.
+
+### `npx skills` (fallback)
+
+Tools that don't yet support either plugin format can install the underlying
+[skills.sh](https://skills.sh)-formatted skills directly. This method only installs `SKILL.md` files — it
+skips whatever else a plugin bundles (agents, hooks, MCP servers) and won't stay in sync with the
+marketplace listings above, so prefer a plugin install method when your agent supports one.
 
 Install every skill at once:
 
