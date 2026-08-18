@@ -1,0 +1,15 @@
+{
+  "name": "pixee-cli",
+  "owner": { "name": "Pixee, Inc." },
+  "metadata": {
+    "description": "Skills for using the Pixee CLI: authentication, scans, workflows, repositories, findings, and API access.",
+    "version": "1.0.0"
+  },
+  "plugins": [
+    {
+      "name": "pixee-cli",
+      "source": "./",
+      "description": "Skills for using the Pixee CLI: authentication, scans, workflows, repositories, findings, and API access."
+    }
+  ]
+}

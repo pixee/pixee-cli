@@ -84,14 +84,18 @@ Don't try to invent shape. Open the closest sibling and follow its skeleton. Eve
 
 ## After you author
 
-1. **Update `README.md`.** Add a bullet under `## Coding agent skills` matching the shape of the existing five bullets:
+1. **Update `README.md`.** Add a bullet under `## Coding agent plugin` (in the `npx skills` fallback subsection) matching the shape of the existing bullets:
    ```markdown
    - [`pixee-<noun>`](./skills/pixee-<noun>/SKILL.md) — <one-line description matching the frontmatter>.
    ```
 2. **License.** The `skills/` directory is Apache-2.0 via `skills/LICENSE`. No per-file header. `skills/NOTICE` stays untouched unless the new skill pulls in third-party attributions (unlikely for documentation).
 3. **Commit style.** Follow recent history: short imperative + issue tag, e.g. `Add pixee-scan skill (ISS-XXXX)`. Use a fresh issue number — ISS-6922 is closed.
 4. **Picker smoke test.** Run `npx skills add pixee/pixee-cli` (no `--all`) and confirm the new entry appears in the interactive picker with its full description visible. If it's missing, the `description` has picker-breaking characters — fix before landing.
-5. **`plugin.json`.** The repo root `plugin.json` (VS Code Agent Plugins / Copilot CLI marketplace manifest) auto-discovers skills from `skills/*/SKILL.md` — adding or removing a skill doesn't require touching it. It versions independently of any skill's `metadata.version`, starting at `1.0.0`. Bump it (semver) only when `plugin.json`'s own fields change — name, description, keywords, license, author, repository — not on every skill edit.
+5. **Plugin manifests.** Two manifests both auto-discover skills from `skills/*/SKILL.md` — adding or removing a skill doesn't require touching either:
+   - Root [`plugin.json`](../../../plugin.json) — the Agent Plugins spec, read by VS Code, Copilot CLI, and Cursor.
+   - [`.claude-plugin/plugin.json`](../../../.claude-plugin/plugin.json) and [`.claude-plugin/marketplace.json`](../../../.claude-plugin/marketplace.json) — Claude Code's format, also read by Codex CLI.
+
+   Both version independently of any skill's `metadata.version`, starting at `1.0.0`, and move together — they describe the same plugin. Bump them (semver, all three files in lockstep) only when the plugin's own identity changes — name, description, keywords, license, author, repository — not on every skill edit.
 
 ## Updating an existing skill
 
