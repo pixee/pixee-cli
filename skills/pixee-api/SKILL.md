@@ -71,6 +71,24 @@ This is pagination-strategy-agnostic: the CLI does not construct `page-number` q
 itself, so if the API migrates to a different strategy the same `--paginate` flag continues to
 work.
 
+## Non-JSON resources
+
+A handful of endpoints serve a resource only as markdown rather than JSON — for example, a triage
+result's `report` and `article` links from `pixee-finding`. `pixee api` negotiates this
+automatically:
+
+- Without `--json`/`--output json`, it sends a JSON-preferred-but-lenient `Accept` header. A JSON
+  response still renders as the usual flattened `key\tvalue` text; a non-JSON response prints as
+  the raw body (e.g. the markdown report, unrendered) instead of failing.
+- With `--json`/`--output json`, it asks for JSON only and stays strict: a resource that can't
+  comply returns `406 Not Acceptable` rather than silently handing a non-JSON body to `jq` as if it
+  were parseable. That 406 is expected behavior for an explicit JSON request against a markdown-only
+  resource, not a sign of a broken endpoint.
+
+There is no `-H`/`--header` flag to set an arbitrary `Accept` yourself — the negotiation above is
+the whole mechanism. If you need JSON specifically from a resource and get a 406, that resource
+does not offer a JSON representation; drop `--json` to read it instead.
+
 ## Examples
 
 ```bash
@@ -96,3 +114,6 @@ pixee api /api/v1/repositories --paginate | jq '.[] | .full_name'
 - Prefer dedicated subcommands (`pixee repo list`, `pixee workflow list`) when they exist — they
   encode best practices on top of `pixee api`. Use `pixee api` as the escape hatch for operations
   that do not yet have a subcommand.
+- A `406 Not Acceptable` from `pixee api --json` means the resource only serves non-JSON content —
+  see **Non-JSON resources** above. Drop `--json` to read it instead of retrying with other flags;
+  there is no header override to reach for.
