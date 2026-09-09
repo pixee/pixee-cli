@@ -73,26 +73,21 @@ work.
 
 ## Non-JSON resources
 
-`pixee api` always sends `Accept: application/json` and has **no flag to override request
-headers** — there is no `-H`/`--header`. That is fine for the HAL API itself, but a handful of
-endpoints serve a specific representation of a resource in a non-JSON format (for example, a
-triage result's `report` and `article` links from `pixee-finding`, which render as markdown). Hit
-one of those through `pixee api` and it returns `406 Not Acceptable`, not JSON — that response is
-expected behavior for a mismatched Accept header, not a broken endpoint or a sign to keep probing
-with different flags.
+A handful of endpoints serve a resource only as markdown rather than JSON — for example, a triage
+result's `report` and `article` links from `pixee-finding`. `pixee api` negotiates this
+automatically:
 
-For those endpoints, drop to `curl` directly, using `pixee auth token` to mint the bearer token
-(same pattern `pixee-auth` documents for the `/o11y/` endpoints — the token is a bare string, so
-the `Authorization` header still needs an explicit `Bearer ` prefix):
+- Without `--json`/`--output json`, it sends a JSON-preferred-but-lenient `Accept` header. A JSON
+  response still renders as the usual flattened `key\tvalue` text; a non-JSON response prints as
+  the raw body (e.g. the markdown report, unrendered) instead of failing.
+- With `--json`/`--output json`, it asks for JSON only and stays strict: a resource that can't
+  comply returns `406 Not Acceptable` rather than silently handing a non-JSON body to `jq` as if it
+  were parseable. That 406 is expected behavior for an explicit JSON request against a markdown-only
+  resource, not a sign of a broken endpoint.
 
-```bash
-TOKEN=$(pixee auth token --server https://pixee.example.com)
-curl -sS -H "Authorization: Bearer ${TOKEN}" -H "Accept: text/markdown" \
-  https://pixee.example.com/api/v1/triage-results/<id>/report
-```
-
-Reach for this only when a link's whole purpose is a non-JSON representation. If the resource is
-ordinary JSON, `pixee api` already sends the right `Accept` header and needs no help.
+There is no `-H`/`--header` flag to set an arbitrary `Accept` yourself — the negotiation above is
+the whole mechanism. If you need JSON specifically from a resource and get a 406, that resource
+does not offer a JSON representation; drop `--json` to read it instead.
 
 ## Examples
 
@@ -119,6 +114,6 @@ pixee api /api/v1/repositories --paginate | jq '.[] | .full_name'
 - Prefer dedicated subcommands (`pixee repo list`, `pixee workflow list`) when they exist — they
   encode best practices on top of `pixee api`. Use `pixee api` as the escape hatch for operations
   that do not yet have a subcommand.
-- A `406 Not Acceptable` from `pixee api` means the resource only serves non-JSON content — see
-  **Non-JSON resources** above for the `curl` fallback. Don't retry with different `pixee api`
-  flags; there is no header override to reach for.
+- A `406 Not Acceptable` from `pixee api --json` means the resource only serves non-JSON content —
+  see **Non-JSON resources** above. Drop `--json` to read it instead of retrying with other flags;
+  there is no header override to reach for.

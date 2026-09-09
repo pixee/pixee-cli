@@ -101,8 +101,9 @@ the same flag.
 
 A `triage`-type representative-result carries its own `_links` beyond `self`/`finding`/`analysis`:
 `report` and `article` (both markdown-rendered explanations of the triage decision) and, for some
-outcome types, `verification`. `pixee api` requests JSON and gets `406 Not Acceptable` from these
-endpoints — see `pixee-api`'s **Non-JSON resources** section for the curl fallback that works.
+outcome types, `verification`. These render as markdown, not JSON; `pixee api <href>` (without
+`--json`) reads them directly — see `pixee-api`'s **Non-JSON resources** section for how that
+negotiation works.
 
 Before chasing `report`/`article`, check whether you already have what you need: the item's own
 `outcome.summary` — and on a blocked fix, `outcome.reason` / `outcome.details` — already inlines the
