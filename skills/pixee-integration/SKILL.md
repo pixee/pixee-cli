@@ -1,10 +1,10 @@
 ---
 name: pixee-integration
-description: "List Pixee integrations to discover the id, type, and capabilities of each scanner integration registered with the org."
+description: "List, view, create, update, and delete Pixee integrations to discover and manage scanner connections registered with the org."
 license: Apache-2.0
 compatibility: Requires the pixee CLI binary on PATH
 metadata:
-  version: 1.1.0
+  version: 1.2.0
   openclaw:
     category: "developer-tools"
     requires:
@@ -26,7 +26,9 @@ etc.) and grants the platform any extra capabilities that integration exposes �
 verdicts back, polling for scans on a cadence, and so on.
 
 The discovery flow exists primarily so an agent calling `pixee scan create --integration-id <id>`
-has a canonical way to look up the integration id without dropping to `pixee api`.
+has a canonical way to look up the integration id without dropping to `pixee api`. `create`,
+`update`, and `delete` manage integrations directly, but `create`/`update` are currently scoped
+to Datadog only — see below.
 
 ## pixee integration list
 
@@ -77,6 +79,51 @@ full HAL body. An `Expand:` line names the relations the integration offers via 
 
 A non-existent ID returns the standard not-found error and exits 3.
 
+## pixee integration create
+
+```
+pixee integration create [options]
+```
+
+Create a **managed Datadog integration**. This is currently the only integration type the CLI can
+create directly — GitHub, GitLab, Sonar, and the other types listed under `--type` on `list` are
+provisioned through their own onboarding flow (a GitHub App install, a CI token exchange, etc.),
+not through this verb.
+
+Flags:
+
+- `--name <name>` — human-readable integration name.
+- `--base-uri <url>` — Datadog API endpoint URL.
+- `--api-key [key]` / `--application-key [key]` — Datadog credentials. Pass the flag with no
+  value to enter the secret interactively, or `-` to read it from stdin; passing the value inline
+  works but lands in shell history. See `pixee-shared` for the same stdin pattern used by
+  `--token`.
+
+## pixee integration update
+
+```
+pixee integration update [options] <integration-id>
+```
+
+Replace connection details for a managed Datadog integration. `<integration-id>` is the value
+shown in the `id` column of `pixee integration list`.
+
+Flags mirror `create`: `--name <name>`, `--base-uri <url>`, `--api-key [key]`,
+`--application-key [key]`, with the same secure-entry (`[key]` prompts, `-` reads stdin) and
+stdin conventions. Pass the credential flags together when rotating both at once. A non-existent
+ID returns the standard not-found error and exits 3.
+
+## pixee integration delete
+
+```
+pixee integration delete <integration-id>
+```
+
+Delete an integration by ID. On success the CLI exits 0; a missing ID exits 3. There is no
+client-side confirmation prompt, matching `scan delete`, `repo delete`, and `workflow delete`.
+Deleting an integration a scan was uploaded with (`pixee scan create --integration-id`) does not
+retroactively affect that scan's history.
+
 ## Examples
 
 ```bash
@@ -111,6 +158,16 @@ pixee scan create pixee/pixee-platform \
 # Walk to an integration's HAL self link rather than re-listing
 href=$(pixee integration list --json | jq -r '.[] | select(.id=="polaris-default") | ._links.self.href')
 pixee api "$href"
+
+# Create a Datadog integration, entering the API key from stdin
+echo -n "$DD_API_KEY" | pixee integration create \
+  --name datadog-prod --base-uri https://api.datadoghq.com --api-key -
+
+# Rotate the application key on an existing Datadog integration
+echo -n "$DD_APP_KEY" | pixee integration update datadog-prod --application-key -
+
+# Delete an integration by ID
+pixee integration delete datadog-prod
 ```
 
 ## Best practices
@@ -132,3 +189,8 @@ pixee api "$href"
 - Prefer the dedicated subcommand over `pixee api /api/v1/integrations` for discovery. The
   subcommand pages transparently and surfaces the same fields without the HAL envelope when
   text mode is enough.
+- `create` and `update` only provision Datadog integrations today. For every other `type`, direct
+  the user to that provider's onboarding flow rather than trying to script it through this verb.
+- Never pass `--api-key` or `--application-key` with an inline value in a script or CI job; use
+  `-` to read from stdin (or the bare flag to prompt interactively) so the secret never lands in
+  shell history or process listings.

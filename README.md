@@ -189,17 +189,26 @@ individual skills directly with `npx skills add pixee/pixee-cli --skill <name>`:
 - [`pixee-api`](./skills/pixee-api/SKILL.md) — the `pixee api` escape hatch and HAL discovery.
 - [`pixee-preferences`](./skills/pixee-preferences/SKILL.md) — read and write Pixee organization
   preferences from files or stdin.
-- [`pixee-repo`](./skills/pixee-repo/SKILL.md) — `pixee repo list`, `view`, `delete`, and the
-  shared `--repo` resolution protocol.
-- [`pixee-scan`](./skills/pixee-scan/SKILL.md) — `pixee scan list`, `view`, `analyze`, `create`,
-  and `delete`, with filters for repository, branch, detector tool, and analysis state.
-- [`pixee-integration`](./skills/pixee-integration/SKILL.md) — `pixee integration list` to
-  discover the integration ids consumed by `pixee scan create --integration-id`.
+- [`pixee-coding-guidelines`](./skills/pixee-coding-guidelines/SKILL.md) — list Pixee organization
+  coding-guidelines documents used alongside preferences for fix guidance.
+- [`pixee-repo`](./skills/pixee-repo/SKILL.md) — `pixee repo list`, `view`, `create`, `delete`,
+  and the shared `--repo` resolution protocol.
+- [`pixee-scan`](./skills/pixee-scan/SKILL.md) — `pixee scan list`, `view`, `analyze`, `cancel`,
+  `create`, and `delete`, with filters for repository, branch, detector tool, and analysis state.
+- [`pixee-scale`](./skills/pixee-scale/SKILL.md) — `pixee scale list` and `view` for the
+  per-detector severity scales scans are normalized against.
+- [`pixee-integration`](./skills/pixee-integration/SKILL.md) — `pixee integration list`, `view`,
+  `create`, `update`, and `delete` to discover and manage the scanner connections consumed by
+  `pixee scan create --integration-id`.
 - [`pixee-analysis`](./skills/pixee-analysis/SKILL.md) — `pixee analysis list` (with filters for
   repo, branch, state, tool, and updated-at window), `pixee analysis view` with `--watch`
   polling until terminal state, and `pixee analysis delete`.
 - [`pixee-finding`](./skills/pixee-finding/SKILL.md) — `pixee finding list` (with `--stats` and
   filters across triage, fix, sca) and `pixee finding view`, scoped to a scan with per-finding
   analysis results inlined.
+- [`pixee-patch`](./skills/pixee-patch/SKILL.md) — `pixee patch list` and `view` for the patches
+  Pixee generates from fix results, filterable by scan, finding, repository, and state.
 - [`pixee-workflow`](./skills/pixee-workflow/SKILL.md) — workflow list/view/create/update/run/delete,
   event kinds, severity filters, and partial-update semantics.
+- [`pixee-system-status`](./skills/pixee-system-status/SKILL.md) — `pixee system-status list` for
+  platform, license, and AI model availability on the connected deployment.
