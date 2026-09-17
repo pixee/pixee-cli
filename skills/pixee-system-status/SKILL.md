@@ -1,6 +1,6 @@
 ---
 name: pixee-system-status
-description: "Show Pixee platform health, license status, and AI model availability for the connected deployment."
+description: "Show Pixee platform health, license status, and AI model availability for the currently connected deployment."
 license: Apache-2.0
 compatibility: Requires the pixee CLI binary on PATH
 metadata:
