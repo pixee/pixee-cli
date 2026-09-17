@@ -4,7 +4,7 @@ description: "Describe the global flags, output format, exit codes, error handli
 license: Apache-2.0
 compatibility: Requires the pixee CLI binary on PATH
 metadata:
-  version: 1.2.0
+  version: 1.3.0
   openclaw:
     category: "developer-tools"
     requires:
@@ -68,6 +68,7 @@ server-precedence rules, and `pixee auth status` — see `pixee-auth`.
   `PIXEE_INSECURE_TLS=true`). Prints a warning to stderr. Last resort for connecting to a Pixee
   Enterprise Server with a privately signed certificate — see **TLS trust failures** below for the
   preferred fix.
+- `--no-pager` — write straight to stdout instead of through a pager.
 
 ## Exit codes
 
