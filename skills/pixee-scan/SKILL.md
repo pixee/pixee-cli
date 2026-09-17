@@ -1,10 +1,10 @@
 ---
 name: pixee-scan
-description: "List, view, analyze, create, and delete Pixee scans with filters for repository, branch, detector tool, and analysis state."
+description: "List, view, analyze, cancel, create, and delete Pixee scans with filters for repository, branch, detector tool, and state."
 license: Apache-2.0
 compatibility: Requires the pixee CLI binary on PATH
 metadata:
-  version: 1.0.0
+  version: 1.1.0
   openclaw:
     category: "developer-tools"
     requires:
@@ -21,8 +21,8 @@ metadata:
 > `../pixee-analysis/SKILL.md` for the analysis UUID `pixee scan analyze` returns, and
 > `../pixee-integration/SKILL.md` for the `--integration-id` discovery flow used by `create`.
 
-`pixee scan` manages scans imported into the Pixee platform: list, view, kick off an analysis,
-upload a new scan, and delete. A scan is the raw output of one detector tool (`sonar`, `appscan`,
+`pixee scan` manages scans imported into the Pixee platform: list, view, kick off or cancel an
+analysis, upload a new scan, and delete. A scan is the raw output of one detector tool (`sonar`, `appscan`,
 `dependabot`, `datadog_sast`, `semgrep`, `codeql`, etc.) imported on a specific branch and
 commit; analyses, findings, and downstream patches all attach back to a scan. Most production
 scans land via the platform's CI integrations; `pixee scan create` is the manual import path for
@@ -102,6 +102,17 @@ Flags:
 A scan that's not analyzable (e.g., already deleted, or a scan kind the server cannot run
 analyses on) returns a 422-shaped problem document and exits non-zero — `pixee-shared` documents
 the rendering.
+
+## pixee scan cancel
+
+```
+pixee scan cancel <scan-id>
+```
+
+Cancel all in-flight analyses on a scan. **Distinct from `pixee scan delete`:** the scan and its
+analyses remain visible afterward, with each canceled analysis left in a terminal `canceled`
+state rather than removed. Reach for `cancel` to stop a runaway or mis-scoped analysis while
+keeping the scan and its history around; reach for `delete` when the scan itself should go away.
 
 ## pixee scan create
 
@@ -186,6 +197,9 @@ analysis_id=$(pixee scan analyze e5e1ebe6-93f3-4426-a98a-6dc6af41b468 \
   | sed -n 's/^Started analysis \([^ ]*\) on scan .*/\1/p')
 pixee analysis view "$analysis_id" --watch
 
+# Cancel all in-flight analyses on a scan without deleting the scan itself
+pixee scan cancel e5e1ebe6-93f3-4426-a98a-6dc6af41b468
+
 # Delete a scan by UUID
 pixee scan delete e5e1ebe6-93f3-4426-a98a-6dc6af41b468
 
@@ -240,3 +254,6 @@ pixee scan create pixee/pixee-platform \
 - The `--integration-id` flag and `pixee integration list` together let an agent attribute an
   upload to a known integration without hand-rolling the id; reach for the discovery flow
   before falling back to `pixee api /api/v1/integrations`.
+- Prefer `pixee scan cancel` over `pixee scan delete` when the goal is to stop a runaway or
+  mis-scoped analysis, not erase the scan's history. `cancel` leaves the scan and its
+  now-`canceled` analyses visible for later review; `delete` removes the scan outright.
