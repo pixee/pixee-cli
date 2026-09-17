@@ -1,10 +1,10 @@
 ---
 name: pixee-repo
-description: "List, view, and delete Pixee repositories with shared name-or-UUID resolution used by every targeted subcommand."
+description: "List, view, create, and delete Pixee repositories with shared name-or-UUID resolution used by every targeted subcommand."
 license: Apache-2.0
 compatibility: Requires the pixee CLI binary on PATH
 metadata:
-  version: 1.0.0
+  version: 1.1.0
   openclaw:
     category: "developer-tools"
     requires:
@@ -19,9 +19,9 @@ metadata:
 > handling. Those conventions apply to every command in this skill. See `../pixee-auth/SKILL.md`
 > if authentication needs to be configured.
 
-`pixee repo` manages repositories registered with the Pixee platform: list, view, and delete. It
-also documents the `--repo` resolution protocol used by every other subcommand that targets a
-specific repository.
+`pixee repo` manages repositories registered with the Pixee platform: list, view, create, and
+delete. It also documents the `--repo` resolution protocol used by every other subcommand that
+targets a specific repository.
 
 ## pixee repo list
 
@@ -57,6 +57,26 @@ fields because the union over five integration types would render inconsistently
 `--json` when an agent needs them.
 
 A non-existent UUID returns the standard not-found error and exits 3.
+
+## pixee repo create
+
+```
+pixee repo create [options]
+```
+
+Create a **generic git repository** — the `git` provider type, for a repository reached over
+plain HTTP(S) with a username/password or access token, as opposed to a GitHub, GitLab, Azure, or
+Bitbucket repository, which are registered through their respective platform integrations instead
+of this verb.
+
+Flags:
+
+- `--name <name>` — repository display name.
+- `--url <url>` — HTTP(S) Git repository URL.
+- `--username <username>` — Git username.
+- `--password [password]` — Git password or access token. Pass the flag with no value to enter it
+  securely, or `--password -` to read it from stdin; an inline value works but lands in shell
+  history.
 
 ## pixee repo delete
 
@@ -111,6 +131,11 @@ pixee repo view a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d
 pixee repo view a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d --json \
   | jq '{type, full_name, github_app_installation_id}'
 
+# Create a generic git repository, reading the password/token from stdin
+echo -n "$GIT_ACCESS_TOKEN" | pixee repo create \
+  --name internal-tool --url https://git.example.com/team/internal-tool.git \
+  --username ci-bot --password -
+
 # Delete a repository by UUID (also removes its scans, workflows, and findings)
 pixee repo delete a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d
 
@@ -132,3 +157,8 @@ pixee workflow list --repo pixee-platform
   text view is intentionally pared down to the fields every integration shares.
 - `pixee repo delete` cascades to scans, workflows, and findings server-side. Confirm scope (and
   any depending scripts) before running it; there is no client-side confirmation prompt.
+- `pixee repo create` only registers the generic `git` provider type. For GitHub, GitLab, Azure,
+  or Bitbucket repositories, use that provider's own integration/App-install flow instead of this
+  verb.
+- Never pass `--password` with an inline value in a script or CI job; use `-` to read from stdin
+  (or the bare flag to prompt interactively) so the credential never lands in shell history.
