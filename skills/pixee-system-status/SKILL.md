@@ -34,8 +34,12 @@ No flags beyond the global ones. Pagination is transparent — the CLI walks eve
 call.
 
 Text output is tab-separated with columns `type`, `name`, `status`, `description`, `id`. The
-`type` discriminator distinguishes platform components, license entries, and AI model entries in
-a single flat listing. Use `--output json` (or `--json`) for the full HAL record per entry.
+`type` discriminator distinguishes platform components (`version`), license entries (`license`),
+and AI model entries (`ai-model`) in a single flat listing. A healthy entry reports
+`status: "up"`. Use `--output json` (or `--json`) for the full HAL record per entry, which adds
+type-specific fields not shown in text mode: `version` on `version` entries, `expires_at` and
+`features_enabled` on `license` entries, and `model` (the underlying model identifier, distinct
+from the human-readable `name`) on `ai-model` entries.
 
 ## Examples
 
@@ -43,11 +47,11 @@ a single flat listing. Use `--output json` (or `--json`) for the full HAL record
 # Full status listing
 pixee system-status list
 
-# Machine-readable, filtered to unhealthy entries
-pixee system-status list --json | jq '.[] | select(.status != "ok")'
+# Machine-readable, filtered to entries that are not up
+pixee system-status list --json | jq '.[] | select(.status != "up")'
 
 # Check whether a specific AI model is currently available
-pixee system-status list --json | jq '.[] | select(.type == "ai-model" and .name == "gpt-5")'
+pixee system-status list --json | jq '.[] | select(.type == "ai-model" and .model == "gpt-5.4-mini")'
 ```
 
 ## Best practices
@@ -57,3 +61,6 @@ pixee system-status list --json | jq '.[] | select(.type == "ai-model" and .name
   scattered per-request errors.
 - Filter on `type` and `status` in `jq` rather than assuming a fixed row order; the set of
   reported components and models can grow between releases.
+- To key on the underlying AI model, filter `--json` output on `.model`, not `.name` — `name` is
+  a human-readable label (e.g. `"Analysis Service - Fast Model"`) and does not contain the model
+  identifier.

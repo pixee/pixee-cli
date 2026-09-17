@@ -32,9 +32,14 @@ pixee scale list
 No flags beyond the global ones. Pagination is transparent — the CLI walks every page in one
 call.
 
-Text output is tab-separated with columns `id`, `type`, `severities`, `min`, `max`. The
-`severities` column lists the raw severity labels the scale maps (e.g., a detector's
-`critical`/`high`/`medium`/`low`), and `min`/`max` give the scale's normalized score bounds.
+Text output is tab-separated with columns `id`, `type`, `severities`, `min`, `max`, where
+`severities` and `min`/`max` are populated based on `type` rather than together:
+
+- `type: ranked-set` (e.g. `sonar-merged`, `fortify`, `semgrep`) — `severities` holds a
+  JSON-array literal of `{"label": <string>, "rank": <int>}` objects, one per severity level the
+  detector reports; `min`/`max` are empty.
+- `type: score` (e.g. `cvss`) — `min`/`max` hold the scale's numeric bounds (e.g. `0` and `10`
+  for CVSS); `severities` is empty.
 
 ## pixee scale view
 
@@ -57,6 +62,9 @@ pixee scale list
 
 # Machine-readable listing piped to jq
 pixee scale list --json | jq '.[] | {id, type, min, max}'
+
+# Pull the severity labels out of a ranked-set scale
+pixee scale list --json | jq '.[] | select(.id == "sonar-merged") | .severities[].label'
 
 # Inspect a single scale
 pixee scale view a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d --json

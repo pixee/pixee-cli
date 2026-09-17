@@ -77,9 +77,8 @@ pixee patch list --scan e5e1ebe6-93f3-4426-a98a-6dc6af41b468 --state completed-s
 # Patches generated from one finding within a scan
 pixee patch list --scan e5e1ebe6-93f3-4426-a98a-6dc6af41b468 --finding AZ4JOwsipJDH8099SpHt
 
-# Patches created in the last week, newest first
-pixee patch list --created-after "$(date -u -d '7 days ago' +%Y-%m-%dT%H:%M:%SZ)" \
-  --sort-by created-desc
+# Patches created since a given date, newest first
+pixee patch list --created-after 2026-09-10T00:00:00Z --sort-by created-desc
 
 # Failed or overcome-by-events patches, for triage
 pixee patch list --state completed-failed --state completed-fixes-overcome-by-events
