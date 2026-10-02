@@ -188,9 +188,10 @@ individual skills directly with `npx skills add pixee/pixee-cli --skill <name>`:
   and the observability endpoints, credential precedence, and fixing exit-code-2 failures.
 - [`pixee-api`](./skills/pixee-api/SKILL.md) — the `pixee api` escape hatch and HAL discovery.
 - [`pixee-preferences`](./skills/pixee-preferences/SKILL.md) — read and write Pixee organization
-  preferences from files or stdin.
+  preferences, and choose when short policy belongs there rather than in coding guidelines.
 - [`pixee-coding-guidelines`](./skills/pixee-coding-guidelines/SKILL.md) — list Pixee organization
-  coding-guidelines documents used alongside preferences for fix guidance.
+  coding-guidelines documents, and choose when long standards belong there rather than in
+  preferences.
 - [`pixee-repo`](./skills/pixee-repo/SKILL.md) — `pixee repo list`, `view`, `create`, `delete`,
   and the shared `--repo` resolution protocol.
 - [`pixee-scan`](./skills/pixee-scan/SKILL.md) — `pixee scan list`, `view`, `analyze`, `cancel`,
