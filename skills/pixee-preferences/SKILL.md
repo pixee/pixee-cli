@@ -1,6 +1,6 @@
 ---
 name: pixee-preferences
-description: "Read and write Pixee organization preferences from files or stdin with optimistic concurrency handled by the CLI."
+description: "Read and write Pixee organization preferences and choose when short policy belongs there rather than in coding guidelines."
 license: Apache-2.0
 compatibility: Requires the pixee CLI binary on PATH
 metadata:
@@ -79,6 +79,45 @@ specific repo should check for `PIXEE.md` before assuming org preferences will a
 Humans can author preferences in the Pixee web app under an organization's
 *Settings → Preferences*; the CLI and the web UI write the same resource.
 
+## Preferences or coding guidelines?
+
+Pixee accepts two kinds of organization guidance, and they are not interchangeable. Preferences
+are policy Pixee applies on every analysis: Pixee considers the whole document for each finding.
+Coding-guidelines documents (see `../pixee-coding-guidelines/SKILL.md`) are reference material:
+Pixee keeps the uploaded documents intact and consults matching passages when triaging and
+fixing SAST findings.
+
+Put guidance in **preferences** when it is:
+
+- A decision about how Pixee behaves: which rules or vulnerability classes are in scope, rules to
+  disable or mark remediable, paths to ignore. Only preferences configure these
+  deterministically.
+- A short, org-wide choice a human has reviewed, such as "fix SQL injection with our `JooqDao`
+  helper" or "services behind the internal mesh are not internet-reachable".
+- Guidance that must also reach SCA analysis, which does not consult coding guidelines.
+
+Upload **coding guidelines** when the source is:
+
+- A long, formal document (a secure coding standard, an architecture handbook, a wiki export).
+- Owned by another team and revised on its own schedule; uploading the new revision and deleting
+  the superseded one keeps Pixee current without re-deriving anything.
+- Something findings should be traceable to; retrieved passages stay labeled with their source
+  document.
+
+Uploads go through the Pixee web app or the API; the CLI only lists coding-guidelines documents.
+
+When an organization has formal standards, use both: upload the documents as written, and keep
+preferences for the handful of always-on decisions. Don't condense a long standard into
+preferences to fit the 10,000-character cap. The summary drops detail the agent judged
+unimportant, goes stale when the standard changes, and is shadowed in any repository that has its
+own `PIXEE.md`, while uploaded guidelines apply to every repository.
+
+Because guidelines are matched against passages rather than read in full, a preference is the more
+dependable choice for a rule that must apply to every relevant finding. Promote a critical rule
+from a guidelines document into preferences rather than relying on retrieval alone, and keep the
+two in sync when the standard changes. Repositories with their own `PIXEE.md` never see org
+preferences, so a promoted rule must also be added to those files to reach them.
+
 ## Writing effective preferences
 
 Preferences come in three flavors:
@@ -140,9 +179,11 @@ done
 - Use `--content-only` when piping into editors, diffs, or `less`. Use `--output json` for
   programmatic inspection and HAL traversal.
 - When composing preferences with help from external context (Notion pages, internal wikis,
-  MCP-connected knowledge bases), draft the candidate document, route it through a human
-  owner if the agent does not have authority to set org-wide policy, then push via
-  `--from-file` once approved.
+  MCP-connected knowledge bases), extract only the behavioral decisions described in
+  [Preferences or coding guidelines?](#preferences-or-coding-guidelines); recommend uploading
+  long-form standards as coding guidelines instead of summarizing them. Draft the candidate
+  document, route it through a human owner if the agent does not have authority to set
+  org-wide policy, then push via `--from-file` once approved.
 - Treat HTTP 412 as expected when multiple agents or humans edit concurrently. The friendly
   retry message is the contract; loop the `set` call or refresh and re-author against the
   latest content.
