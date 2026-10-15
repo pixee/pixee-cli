@@ -141,8 +141,9 @@ be edited in place: re-pointing a repository is delete, then create, and the new
 id. To move many repositories between integrations safely, follow
 `../pixee-migrate-repo-integrations/SKILL.md`.
 
-Older binaries lack these commands. When `pixee repo integration --help` reports an unknown
-command, upgrade the CLI (see `pixee-shared`).
+Older binaries lack these commands, and on them `pixee repo integration --help` prints the parent
+`pixee repo` help instead of an error. Run it first: its usage line must read
+`pixee repo integration`, otherwise upgrade the CLI (see `pixee-shared`).
 
 ## Repository name resolution
 
