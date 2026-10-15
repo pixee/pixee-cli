@@ -193,7 +193,8 @@ individual skills directly with `npx skills add pixee/pixee-cli --skill <name>`:
   coding-guidelines documents, and choose when long standards belong there rather than in
   preferences.
 - [`pixee-repo`](./skills/pixee-repo/SKILL.md) — `pixee repo list`, `view`, `create`, `delete`,
-  and the shared `--repo` resolution protocol.
+  `integration create` and `delete` for repository integration mappings, and the shared `--repo`
+  resolution protocol.
 - [`pixee-scan`](./skills/pixee-scan/SKILL.md) — `pixee scan list`, `view`, `analyze`, `cancel`,
   `create`, and `delete`, with filters for repository, branch, detector tool, and analysis state.
 - [`pixee-scale`](./skills/pixee-scale/SKILL.md) — `pixee scale list` and `view` for the
@@ -201,6 +202,9 @@ individual skills directly with `npx skills add pixee/pixee-cli --skill <name>`:
 - [`pixee-integration`](./skills/pixee-integration/SKILL.md) — `pixee integration list`, `view`,
   `create`, `update`, and `delete` to discover and manage the scanner connections consumed by
   `pixee scan create --integration-id`.
+- [`pixee-migrate-repo-integrations`](./skills/pixee-migrate-repo-integrations/SKILL.md) — migrate
+  repositories from one scanner integration to another by re-pointing their mappings, with an
+  approval gate, per-repository verification, rollback, and a final audit.
 - [`pixee-analysis`](./skills/pixee-analysis/SKILL.md) — `pixee analysis list` (with filters for
   repo, branch, state, tool, and updated-at window), `pixee analysis view` with `--watch`
   polling until terminal state, and `pixee analysis delete`.

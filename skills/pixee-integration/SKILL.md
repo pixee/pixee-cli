@@ -4,7 +4,7 @@ description: "List, view, create, update, and delete Pixee integrations to disco
 license: Apache-2.0
 compatibility: Requires the pixee CLI binary on PATH
 metadata:
-  version: 1.2.0
+  version: 1.3.0
   openclaw:
     category: "developer-tools"
     requires:
@@ -17,7 +17,8 @@ metadata:
 
 > **PREREQUISITES:** Read `../pixee-shared/SKILL.md` for global flags, exit codes, and error
 > handling, and `../pixee-auth/SKILL.md` if authentication needs to be configured. See
-> `../pixee-scan/SKILL.md` for the `--integration-id` consumer this skill's `list` verb feeds.
+> `../pixee-scan/SKILL.md` for the `--integration-id` consumer this skill's `list` verb feeds, and
+> `../pixee-migrate-repo-integrations/SKILL.md` to move repositories from one integration to another.
 
 `pixee integration` enumerates the third-party scanner integrations registered with the Pixee
 organization. Each integration is the org-side configuration that lets the platform attribute an
@@ -39,7 +40,7 @@ pixee integration list
 List integrations registered with the org. Pagination is transparent: the CLI walks every page
 in one call.
 
-Text output is tab-separated with columns `id`, `type`, `capabilities`. The `capabilities`
+Text output is tab-separated with columns `id`, `name`, `type`, `capabilities`. The `capabilities`
 column is a JSON-array literal (e.g., `[]` for an integration with no extras, `["triage-push"]`
 when the integration can push triage verdicts back to the source). JSON output is a flat array
 of integration records with the HAL envelope stripped — each record carries `id`, `type`,
@@ -60,7 +61,11 @@ Filter flags:
 
 - `--search <text>` — substring match against integration metadata (server-side).
 - `--type <type>` — filter by integration type. One of `appscan`, `arnica`, `azure`, `bitbucket`,
-  `checkmarx`, `datadog`, `github`, `gitlab`, `polaris`, `sonar`, `veracode`.
+  `black-duck-hub`, `checkmarx`, `checkmarx-enterprise`, `datadog`, `github`, `gitlab`, `polaris`,
+  `sonar`, `veracode`.
+- `--source <source>` — `managed` for integrations created in the product, `system` for the
+  read-only ones configured in the admin console. Each record's JSON carries the same `source`
+  field.
 
 ## pixee integration view
 
@@ -186,6 +191,10 @@ pixee integration delete datadog-prod
   for some providers (one `polaris` integration backs both `polaris_sast` and `polaris_sca`
   scans). Pick the `--tool` value from the scan's true kind, and the `--integration-id` from
   whatever integration attributes the upload.
+- The `repository_count` field in `list --json` reads 0 for Sonar integrations that have
+  repository mappings, so it cannot tell you which repositories use one. Read mappings per repository with
+  `pixee repo view <repo-id> --expand repository-integrations` (see `pixee-repo`), and use
+  `pixee-migrate-repo-integrations` when the goal is to move them to another integration.
 - Prefer the dedicated subcommand over `pixee api /api/v1/integrations` for discovery. The
   subcommand pages transparently and surfaces the same fields without the HAL envelope when
   text mode is enough.

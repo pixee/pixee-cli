@@ -1,10 +1,10 @@
 ---
 name: pixee-repo
-description: "List, view, create, and delete Pixee repositories with shared name-or-UUID resolution used by every targeted subcommand."
+description: "List, view, create, and delete Pixee repositories and their integration mappings with shared name-or-UUID resolution."
 license: Apache-2.0
 compatibility: Requires the pixee CLI binary on PATH
 metadata:
-  version: 1.1.0
+  version: 1.2.0
   openclaw:
     category: "developer-tools"
     requires:
@@ -20,8 +20,9 @@ metadata:
 > if authentication needs to be configured.
 
 `pixee repo` manages repositories registered with the Pixee platform: list, view, create, and
-delete. It also documents the `--repo` resolution protocol used by every other subcommand that
-targets a specific repository.
+delete, plus the integration mappings that bind a repository to a scanner project. It also
+documents the `--repo` resolution protocol used by every other subcommand that targets a specific
+repository.
 
 ## pixee repo list
 
@@ -56,7 +57,12 @@ DevOps, etc.) and the `_links` envelope. The text view intentionally omits the p
 fields because the union over five integration types would render inconsistently; reach for
 `--json` when an agent needs them.
 
-A non-existent UUID returns the standard not-found error and exits 3.
+A non-existent UUID returns the standard not-found error and exits 3. `view` takes a UUID only; a
+name or `owner/name` answers not found, so resolve it with `pixee repo list --name` first.
+
+- `--expand <relation>` — **repeatable**. Follow one of the repository's `_links` and render it
+  inline. The `Expand:` line names the relations on offer; `repository-integrations` lists the
+  repository's integration mappings (see **pixee repo integration** below).
 
 ## pixee repo create
 
@@ -91,6 +97,53 @@ name suggests. On success the CLI prints `Deleted repo <id>` and exits 0; a miss
 There is no confirmation prompt — `pixee` does not ship interactive guards for any destructive
 verb (`scan delete`, `workflow delete`, `repo delete` all behave the same way). Scripts that want
 a guard should add their own check before calling.
+
+## pixee repo integration
+
+A **mapping** binds a repository to a project on a scanner integration (a Sonar project key, an
+AppScan application id, and so on). A repository holds one mapping per type.
+
+**List** a repository's mappings with the expand flag on `view`:
+
+```
+pixee repo view <repo-id> --expand repository-integrations
+```
+
+Text output gives one row per mapping: type, mapping id, integration href, and the type's
+identifiers as `name=value`. `--json` returns the full records under
+`_embedded."repository-integrations"`; each carries `id`, `type`, the type's identifier fields, and
+`_links.integration.href` naming the integration it uses. Treat that href as opaque and compare it
+for equality against an integration's own `_links.self.href` (see `pixee-integration`).
+
+**Create** one mapping, with the type before the repository:
+
+```
+pixee repo integration create <type> <repository> --<identifier-flag> <value> [--integration-id <id>]
+```
+
+`<type>` is one of `sonar`, `appscan`, `arnica`, `black-duck-hub`, `checkmarx`,
+`checkmarx-enterprise`, `datadog`, `polaris`, `veracode`; each has its own identifier flags, so run
+`pixee repo integration create <type> --help`. `<repository>` accepts a name, `owner/name`, or UUID.
+`--integration-id` is optional except for `black-duck-hub` and `checkmarx-enterprise`; omitting it
+selects the type's system default instance, and the default instance's own id (for example
+`sonar-default`) is rejected with "Unknown integration". A second mapping of the same type exits 1
+with "Duplicate repository integration". A missing required flag exits 1; an unknown repository
+exits 3.
+
+**Delete** one mapping:
+
+```
+pixee repo integration delete <repository> <mapping-id>
+```
+
+`<mapping-id>` is the `id` from the listing. A mapping that does not exist exits 3. Mappings cannot
+be edited in place: re-pointing a repository is delete, then create, and the new mapping gets a new
+id. To move many repositories between integrations safely, follow
+`../pixee-migrate-repo-integrations/SKILL.md`.
+
+Older binaries lack these commands, and on them `pixee repo integration --help` prints the parent
+`pixee repo` help instead of an error. Run it first: its usage line must read
+`pixee repo integration`, otherwise upgrade the CLI (see `pixee-shared`).
 
 ## Repository name resolution
 
@@ -136,6 +189,16 @@ echo -n "$GIT_ACCESS_TOKEN" | pixee repo create \
   --name internal-tool --url https://git.example.com/team/internal-tool.git \
   --username ci-bot --password -
 
+# List a repository's integration mappings, then read the full records
+pixee repo view a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d --expand repository-integrations
+pixee repo view a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d --expand repository-integrations --json \
+  | jq '._embedded."repository-integrations"[] | {id, type, integration: ._links.integration.href}'
+
+# Map a repository to a Sonar project on a specific integration, then remove the mapping
+pixee repo integration create sonar pixee/pixee-platform \
+  --project-key pixee_pixee-platform --integration-id <integration-id>
+pixee repo integration delete pixee/pixee-platform <mapping-id>
+
 # Delete a repository by UUID (also removes its scans, workflows, and findings)
 pixee repo delete a1b2c3d4-5e6f-7a8b-9c0d-1e2f3a4b5c6d
 
@@ -160,5 +223,7 @@ pixee workflow list --repo pixee-platform
 - `pixee repo create` only registers the generic `git` provider type. For GitHub, GitLab, Azure,
   or Bitbucket repositories, use that provider's own integration/App-install flow instead of this
   verb.
+- Deleting a mapping leaves the repository in place; deleting the repository cascades to its scans.
+  To change which integration a repository uses, change the mapping, never the repository.
 - Never pass `--password` with an inline value in a script or CI job; use `-` to read from stdin
   (or the bare flag to prompt interactively) so the credential never lands in shell history.
