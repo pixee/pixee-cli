@@ -20,8 +20,9 @@ metadata:
 > if authentication needs to be configured.
 
 `pixee repo` manages repositories registered with the Pixee platform: list, view, create, and
-delete, plus the integration mappings that bind a repository to a scanner project. It also documents the `--repo` resolution protocol used by every other subcommand that
-targets a specific repository.
+delete, plus the integration mappings that bind a repository to a scanner project. It also
+documents the `--repo` resolution protocol used by every other subcommand that targets a specific
+repository.
 
 ## pixee repo list
 

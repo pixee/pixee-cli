@@ -61,6 +61,11 @@ pixee integration list --type <type> --json > integrations.json
 Pick the **old** and **new** integrations by `id`. When the user's wording does not identify one
 unambiguously, show the candidates and ask.
 
+Check the **new** integration before planning, because a failed create after a delete is the
+expensive failure. Its `type` must equal the mapping type. Read its `health` from the same JSON:
+`{"status": "healthy", ...}` is good; `null` is normal for a system default instance, and you say
+so; any other status you report to the user, who decides at the approval gate whether to go on.
+
 Accept one of two inputs:
 
 - **Old to new.** Every mapping of `<type>` that points at the old integration moves to the new one.
@@ -87,15 +92,16 @@ pixee repo view <repo-uuid> --expand repository-integrations --json \
 ```
 
 Swap `project_key` for the type's identifier field; the text view of `repo view` lists each
-mapping's identifiers as `name=value`. Done when every repository has been read and every mapping of the type is paired with its current
-integration. Every target identifier (project key, application id, and so on) comes from that
-mapping's JSON; never invent or edit one.
+mapping's identifiers as `name=value`. Done when every repository has been read and every mapping
+of the type is paired with its current integration. Every target identifier (project key,
+application id, and so on) comes from that mapping's JSON; never invent or edit one.
 
 ## 5. Approval gate
 
 Show the human the complete plan, one row per mapping: repository, mapping id, type, target
-identifier, old integration, new integration. State that each move is delete then create and is
-not atomic. **Wait for explicit approval.** Write nothing before it.
+identifier, old integration, new integration. Include the new integration's `type` and `health`.
+State that each move is delete then create and is not atomic. **Wait for explicit approval.**
+Write nothing before it.
 
 ## 6. Migrate one repository, then the rest
 
@@ -104,11 +110,15 @@ that repository passes. Stop at the first failure of any kind.
 
 For each repository:
 
-1. **Snapshot.** Save the mapping's full JSON and the scan count.
+1. **Snapshot.** Save the repository's mappings and the scan count to a named scratch directory
+   (tell the user its path) and keep every snapshot until the audit passes.
    ```bash
-   pixee repo view <repo-uuid> --expand repository-integrations --json > snapshot-<repo-uuid>.json
-   pixee scan list --repo <repo-uuid> --json | jq length
+   pixee repo view <repo-uuid> --expand repository-integrations --json \
+     > <scratch>/snapshot-<repo-uuid>.json
+   pixee scan list --repo <repo-uuid> --json | jq length   # record beside the snapshot
    ```
+   The scan count pages through every scan, so it is slow on repositories with thousands. It only
+   has to match before and after.
 2. **Delete** the old mapping: `pixee repo integration delete <repo-uuid> <mapping-id>`.
 3. **Create** it on the new integration with the same target identifier (flags in the table below):
    `pixee repo integration create <type> <repo-uuid> --<identifier-flag> <value> --integration-id <new-id>`.
@@ -120,6 +130,13 @@ For each repository:
 
 Deleting a mapping did not cascade to scans in the observed migrations. Verify the count per
 repository rather than assuming it.
+
+### Resuming an interrupted run
+
+A session can die between a delete and its create. Before continuing a previous run, re-read each
+repository's live mappings and compare them to the snapshots. A repository with no mapping of the
+type is an interrupted move: recreate it from its snapshot (see below) before doing anything else,
+then tell the user.
 
 ### When create fails after delete
 
@@ -138,8 +155,10 @@ target identifier matches its snapshot.
 ## 8. Report
 
 Tell the user, in this order: outcome, repositories moved, anything that failed or was rolled
-back, side findings (for example a missing webhook secret; report these, do not fix them). State
-that the **old integration is still in place**; removing it is the user's decision.
+back, what was not verified, side findings (for example a missing webhook secret; report these,
+do not fix them). Findings and scan attribution were not compared, only mappings and scan counts;
+suggest the user spot-check one migrated repository in the UI. State that the **old integration is
+still in place**; removing it is the user's decision.
 
 ## Create flags by type
 
