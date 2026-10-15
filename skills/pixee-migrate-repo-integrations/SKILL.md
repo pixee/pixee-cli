@@ -21,8 +21,16 @@ metadata:
 > `../pixee-api/SKILL.md`.
 
 A **mapping** binds one repository to one project on a scanner integration (a Sonar project key,
-an AppScan application id, and so on). To move repositories from integration A to integration B,
-change the mappings and leave the repositories alone: deleting a repository cascades to its scans,
+an AppScan application id, and so on). The intended case: an organization configured a scanner in
+the admin console, which Pixee shows as a read-only **system** instance (named like "Sonar (admin
+console)", `source: system`, id like `sonar-default`), and now has a **managed** instance created in
+the product (named like "SonarQube Cloud", `source: managed`, a UUID id). Repositories keep using
+the system instance until their mappings are moved, and the system instance goes away when the
+admin console is retired. This skill moves the mappings from the system instance to a managed one.
+Moving between two managed instances, or back to the system instance, uses the same steps; see
+**Other directions**.
+
+Change the mappings and leave the repositories alone: deleting a repository cascades to its scans,
 SBOMs, patches, and workflows.
 
 Re-pointing a mapping is **delete, then create**. The API has no update (PATCH and PUT answer 405),
@@ -56,21 +64,28 @@ is the one they intend. Never print or echo a token.
 
 ```bash
 pixee integration list --type <type> --json > integrations.json
+jq '.[] | {id, name, source, health, webhook_secret_configured}' integrations.json
 ```
 
-Pick the **old** and **new** integrations by `id`. When the user's wording does not identify one
-unambiguously, show the candidates and ask.
+Take the **old** integration to be the one with `source: "system"` and the **new** one to be a
+`source: "managed"` integration. When several managed instances exist, show their names and ask
+which one; never guess. If the user names different instances, use theirs.
 
 Check the **new** integration before planning, because a failed create after a delete is the
-expensive failure. Its `type` must equal the mapping type. Read its `health` from the same JSON:
-`{"status": "healthy", ...}` is good; `null` is normal for a system default instance, and you say
-so; any other status you report to the user, who decides at the approval gate whether to go on.
+expensive failure. Its `type` must equal the mapping type. `health` of `{"status": "healthy", ...}`
+is good; anything else you report to the user, who decides at the approval gate whether to go on.
+Read `webhook_secret_configured` too and report `false` as a side finding.
+
+For webhook-driven types (Sonar, AppScan), a managed instance has its own webhook address, shown in
+its setup form in the product, and the scanner must be pointed at it. Tell the user this before the
+approval gate and ask them to confirm the scanner side is handled; the CLI cannot check it.
 
 Accept one of two inputs:
 
-- **Old to new.** Every mapping of `<type>` that points at the old integration moves to the new one.
+- **System to managed.** Every mapping of `<type>` that points at the system instance moves to the
+  new one. This is the default.
 - **Explicit map.** The user supplies repository to integration pairs. Move exactly those
-  repositories; leave every other mapping alone.
+  repositories, each to its own integration; leave every other mapping alone.
 
 `repository_count` in `integration list` reads 0 for these integrations, so it cannot find
 mappings. Enumerate through repositories (step 4).
@@ -142,9 +157,8 @@ then tell the user.
 
 The repository now has no mapping. Recreate the old one from the snapshot: same identifier and
 the old integration's id, then tell the user what failed and where you stopped. Omit
-`--integration-id` when the old integration is the system default; the CLI rejects the default's
-id (for example `sonar-default`) with "Unknown integration", and omitting the flag selects the
-default. The same rule applies when the *new* integration is the system default.
+`--integration-id` when the old integration is the system instance; the CLI rejects its id (for
+example `sonar-default`) with "Unknown integration", and omitting the flag selects it.
 
 ## 7. Audit
 
@@ -157,8 +171,16 @@ target identifier matches its snapshot.
 Tell the user, in this order: outcome, repositories moved, anything that failed or was rolled
 back, what was not verified, side findings (for example a missing webhook secret; report these,
 do not fix them). Findings and scan attribution were not compared, only mappings and scan counts;
-suggest the user spot-check one migrated repository in the UI. State that the **old integration is
-still in place**; removing it is the user's decision.
+suggest the user spot-check one migrated repository in the UI. State that the **system instance is
+still in place**; it cannot be removed in the product and goes away only when the admin console is
+retired, which is the operator's call.
+
+## Other directions
+
+- **Managed to managed.** Same steps; the old integration is the one the user names, and the new
+  one is passed with `--integration-id`.
+- **Managed back to system.** Create without `--integration-id`; the CLI rejects the system
+  instance's id.
 
 ## Create flags by type
 
