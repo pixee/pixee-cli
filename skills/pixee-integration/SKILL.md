@@ -17,7 +17,8 @@ metadata:
 
 > **PREREQUISITES:** Read `../pixee-shared/SKILL.md` for global flags, exit codes, and error
 > handling, and `../pixee-auth/SKILL.md` if authentication needs to be configured. See
-> `../pixee-scan/SKILL.md` for the `--integration-id` consumer this skill's `list` verb feeds.
+> `../pixee-scan/SKILL.md` for the `--integration-id` consumer this skill's `list` verb feeds, and
+> `../pixee-migrate-repo-integrations/SKILL.md` to move repositories from one integration to another.
 
 `pixee integration` enumerates the third-party scanner integrations registered with the Pixee
 organization. Each integration is the org-side configuration that lets the platform attribute an
@@ -186,6 +187,10 @@ pixee integration delete datadog-prod
   for some providers (one `polaris` integration backs both `polaris_sast` and `polaris_sca`
   scans). Pick the `--tool` value from the scan's true kind, and the `--integration-id` from
   whatever integration attributes the upload.
+- `repository_count` in `list` output does not reflect repository mappings for these integrations,
+  so it cannot tell you which repositories use one. Read mappings per repository with
+  `pixee repo view <repo-id> --expand repository-integrations` (see `pixee-repo`), and use
+  `pixee-migrate-repo-integrations` when the goal is to move them to another integration.
 - Prefer the dedicated subcommand over `pixee api /api/v1/integrations` for discovery. The
   subcommand pages transparently and surfaces the same fields without the HAL envelope when
   text mode is enough.
