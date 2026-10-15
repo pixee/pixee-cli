@@ -18,8 +18,8 @@ metadata:
 > **PREREQUISITES:** Read `../pixee-shared/SKILL.md` for global flags, exit codes, and error
 > handling. Sections used below: `pixee repo integration` and `pixee repo view` in
 > `../pixee-repo/SKILL.md`, `pixee integration list` in `../pixee-integration/SKILL.md`,
-> `pixee scan list` in `../pixee-scan/SKILL.md`, and `pixee auth status` in
-> `../pixee-auth/SKILL.md`. HAL link semantics live in `../pixee-api/SKILL.md`.
+> `pixee auth status` in `../pixee-auth/SKILL.md`, and following a HAL link with `pixee api` in
+> `../pixee-api/SKILL.md`.
 
 A **mapping** binds one repository to one project on a scanner integration (a Sonar project key,
 an AppScan application id, and so on). The intended case: an organization configured a scanner in
@@ -79,10 +79,13 @@ directions**.
 
 Check every **new** integration before planning, because a failed create after a delete is the
 expensive failure. `health` of `{"status": "healthy", ...}` is good; report anything else to the
-user, who decides at the approval gate whether to go on. For Sonar and AppScan, whose scanners
-call back into Pixee, report `webhook_secret_configured: false` as a side finding, and tell the
-user the scanner must be pointed at the managed instance's own webhook address (shown when the
-instance was set up). The CLI cannot check the scanner side, so ask the user to confirm it.
+user, who decides at the approval gate whether to go on.
+
+Sonar and AppScan scanners call back into Pixee, which adds two items. Report
+`webhook_secret_configured: false` on the new instance as a side finding. Then, whatever that field
+says, tell the user the scanner must be pointed at the managed instance's own webhook address
+(shown when the instance was set up) and ask them to confirm it is; the CLI cannot check the
+scanner side.
 
 Accept one of two inputs:
 
@@ -108,13 +111,14 @@ one. Fetch the integration list once and reuse it for every repository:
 ```bash
 ints=$(pixee integration list --json)
 pixee repo view <repo-uuid> --expand repository-integrations --json \
-  | jq --argjson ints "$ints" '._embedded."repository-integrations"[]
+  | jq --argjson ints "$ints" --arg repo <repo-uuid> '._embedded."repository-integrations"[]
       | ._links.integration.href as $h | del(._links)
-      | . + {integration: (first($ints[] | select(._links.self.href == $h) | .id)
+      | . + {repository: $repo,
+             integration: (first($ints[] | select(._links.self.href == $h) | .id)
                            // "UNMATCHED " + $h)}'
 ```
 
-Each output record is a whole mapping plus its integration id. Keep the records whose `type` is the
+Each output record is a whole mapping plus its repository and integration id. Keep the records whose `type` is the
 migrating type. An `UNMATCHED` integration names a mapping whose integration is missing from the
 list: report it at the approval gate and leave it alone. No output means the repository has no
 mappings. Zero mappings of a type the user expected is a stop-and-ask.
@@ -145,13 +149,14 @@ For each repository:
    ```bash
    pixee repo view <repo-uuid> --expand repository-integrations --json \
      > <scratch>/snapshot-<repo-uuid>.json
-   pixee scan list --repo <repo-uuid> --json | jq length > <scratch>/scans-<repo-uuid>.txt
+   pixee --json api "$(jq -r '._links.scans.href' <scratch>/snapshot-<repo-uuid>.json)" \
+     | jq .total > <scratch>/scans-<repo-uuid>.txt
    ```
    Done when the snapshot is non-empty, parses as JSON, and contains the mapping about to be
-   deleted. The scan count pages through every scan, so it is slow on repositories with thousands;
-   take it anyway, because step 4 of this loop depends on it. With no writable filesystem, print
-   the snapshot (it holds no credentials) and the count to the user instead; resuming then depends
-   on that transcript.
+   deleted, and the count file holds a number. The scans link answers with the first page and a
+   `total`, so the count costs one request however many scans the repository has; `pixee scan list`
+   would download every scan. With no writable filesystem, print the snapshot (it holds no
+   credentials) and the count to the user instead; resuming then depends on that transcript.
 2. **Delete** the old mapping: `pixee repo integration delete <repo-uuid> <mapping-id>`.
 3. **Create** it on the new integration with the same target identifier, and every optional
    identifier the snapshot holds (for example Veracode's `--sandbox-guid`); flags are in the table
