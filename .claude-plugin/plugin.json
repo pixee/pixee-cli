@@ -1,6 +1,6 @@
 {
   "name": "pixee-cli",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Skills for using the Pixee CLI: authentication, scans, workflows, repositories, findings, and API access.",
   "author": { "name": "Pixee, Inc.", "url": "https://pixee.ai" },
   "homepage": "https://github.com/pixee/pixee-cli",
