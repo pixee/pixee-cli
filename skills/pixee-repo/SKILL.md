@@ -28,15 +28,15 @@ repository.
 
 List registered repositories. Pagination is transparent — the CLI walks every page automatically.
 Text output is tab-separated with columns `name`, `full_name`, `type`, `default_branch`, `id`.
-GitHub repositories on which the Pixee GitHub App is no longer installed are left out unless you
-pass `--include-uninstalled` (see "Uninstalled repositories").
+GitHub repositories on which the Pixee GitHub App is not installed are left out unless you pass
+`--include-uninstalled` (see "Uninstalled repositories").
 
 Flags:
 
 - `--name <pattern>` — case-insensitive partial-match filter against the repository's `name` field.
   Server-side filter; reduces payload before pagination.
-- `--include-uninstalled` — also list GitHub repositories on which the Pixee GitHub App is no
-  longer installed. Text output gains a sixth column, `installed`: `true` or `false` for a GitHub
+- `--include-uninstalled` — also list GitHub repositories on which the Pixee GitHub App is not
+  installed. With it, text output has a sixth column, `installed`: `true` or `false` for a GitHub
   repository, empty for every other type. Combines with `--name` and the other `list` filters.
   Older binaries reject the flag with `unknown option`; upgrade the CLI (see `pixee-shared`).
 - `--output text|json` — see `pixee-shared`.
@@ -153,15 +153,15 @@ Older binaries lack these commands, and on them `pixee repo integration --help` 
 
 ## Uninstalled repositories
 
-A GitHub repository can outlive the Pixee GitHub App's access to it. Pixee does not delete it: its
-scans and findings stay, and they are still reachable by UUID. What changes is where it shows up:
+A GitHub repository can be registered with Pixee without the Pixee GitHub App installed on it. It
+keeps its scans and findings, reachable by UUID, but listings and name lookups treat it differently:
 
 - **`pixee repo list` omits it by default.** Only GitHub repositories are affected. GitLab, Azure
   DevOps, Bitbucket, and generic git repositories have no install state and are always listed.
 - **`pixee repo list --include-uninstalled` includes it.** Each GitHub repository then carries a
   boolean `installed`: the text view adds it as the sixth column, and `--output json` shows it as
   the `installed` property (`pixee repo view <repo-id> --json` shows it too).
-- **Names no longer resolve to it.** `--repo <name>` and `--repo <owner/name>` look the repository
+- **Names do not resolve to it.** `--repo <name>` and `--repo <owner/name>` look the repository
   up in the default list, so for an uninstalled repository they exit 3 ("no repository named X
   found"). A UUID skips the lookup, so `--repo <uuid>` and `pixee repo view <uuid>` keep working.
 
@@ -204,7 +204,7 @@ pixee repo list --output json | jq '.[] | select(.type == "github") | .full_name
 # Filter server-side to reduce payload
 pixee repo list --name pixee-platform
 
-# Include GitHub repositories the Pixee GitHub App can no longer reach; the sixth column is installed
+# Include GitHub repositories the Pixee GitHub App is not installed on; the sixth column is installed
 pixee repo list --include-uninstalled
 
 # Which repositories are uninstalled? Print each one's UUID and full name
@@ -257,9 +257,9 @@ pixee workflow list --repo pixee-platform
 - `pixee repo create` only registers the generic `git` provider type. For GitHub, GitLab, Azure,
   or Bitbucket repositories, use that provider's own integration/App-install flow instead of this
   verb.
-- Do not delete a repository just because it is uninstalled. Uninstalling the app hides the
-  repository from the default list and from name lookups, but its scans and findings remain; confirm
-  with the user before running `pixee repo delete` on it.
+- Do not delete a repository just because it is uninstalled. An uninstalled repository is hidden
+  from the default list and from name lookups, but it keeps its scans and findings; confirm with the
+  user before running `pixee repo delete` on it.
 - Deleting a mapping leaves the repository in place; deleting the repository cascades to its scans.
   To change which integration a repository uses, change the mapping, never the repository.
 - Never pass `--password` with an inline value in a script or CI job; use `-` to read from stdin
