@@ -3,7 +3,7 @@
   "owner": { "name": "Pixee, Inc." },
   "metadata": {
     "description": "Pixee coding-agent plugins.",
-    "version": "1.1.0"
+    "version": "1.2.0"
   },
   "plugins": [
     {
