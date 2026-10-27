@@ -131,9 +131,9 @@ after the upload may have reached the server (timeout, dropped connection), run
 Flags:
 
 - `--tool <tool>` — **required**. Scanner tool that produced the scan. One of `codeql`, `sonar`,
-  `semgrep`, `polaris_sast`, `polaris_sca`, `appscan`, `defectdojo`, `datadog_sast`,
-  `dependabot`, `contrast`, `gitlab_sast`, `gitlab_dependency_scanning`, `snyk`, `checkmarx`,
-  `veracode`, `fortify`, `arnica_sast`. The CLI validates against the enum before sending.
+  `semgrep`, `polaris_sast`, `polaris_sca`, `appscan`, `datadog_sast`, `dependabot`,
+  `contrast`, `gitlab_sast`, `gitlab_dependency_scanning`, `snyk`, `checkmarx`, `veracode`,
+  `fortify`, `arnica_sast`. The CLI validates against the enum before sending.
 - `--file <path>` — **repeatable**. Attach a scan output file (SARIF, SCA report, etc.) to the
   multipart upload. Most detector tools require at least one file; integration-driven tools
   whose data the platform pulls from the integration directly (e.g., sonar, snyk) can omit it.
